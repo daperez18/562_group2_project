@@ -14,9 +14,9 @@ json2={"\"bucketname\"":"\"$bucketname\"","\"key\"":"\"$key\""}
 #echo $output
 #echo ""
 #echo ""
-
+echo $json2 | jq
 echo "Invoking Lambda function using AWS CLI"
-time output=`aws lambda invoke --invocation-type RequestResponse --function-name  ServiceTwo --region us-east-2 --payload $json2 /dev/stdout | head -n 1 | head -c -2 ; echo`
+#time output=`aws lambda invoke --invocation-type RequestResponse --function-name  ServiceTwo --region us-east-2 --payload $json2 /dev/stdout | head -n 1 | head -c -2 ; echo`
 echo ""
 echo "AWS CLI RESULT:"
 echo $output
