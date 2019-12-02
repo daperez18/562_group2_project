@@ -1,8 +1,11 @@
 package inspector
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -65,87 +68,86 @@ func (inspector *Inspector) InspectMemory() {
 func (inspector *Inspector) InspectCPU() {
 	inspector.inspectedCPU = true
 
-	// var text string
-	// var start int
-	// var end int
-
-	f, err := ioutil.ReadFile("/proc/cpuinfo")
+	cpuInfoMap, err := parseCPUInfoFile()
 	if err != nil {
-		fmt.Println(err)
 		return
 	}
 
-	f2, err := ioutil.ReadFile("/proc/stat")
+	//Get CPU Type
+	if modelName, exists := cpuInfoMap["model name"]; exists {
+		inspector.AddAttribute("cpuType", modelName)
+	}
+
+	//Get CPU Model
+	if cpuModel, exists := cpuInfoMap["model"]; exists {
+		inspector.AddAttribute("cpuModel", cpuModel)
+	}
+
+	//Get CPU Core Count
+	if cpuCores, exists := cpuInfoMap["cpu cores"]; exists {
+		inspector.AddAttribute("cpuCores", cpuCores)
+	}
+
+	// readStatFile
+	statMap, err := parseStatFile()
 	if err != nil {
-		fmt.Println(err)
 		return
 	}
-	// fileMap := parseFile(f)
-	// text = string(f)
 
-	inspector.AddAttribute("cpuinfo file", string(f))
-	inspector.AddAttribute("stat file", string(f2))
-	// start = strings.Index(text, "name") + 7
-	// end = start + text[]
+	params := strings.Split(statMap["cpu"], " ")
+	metricNames := []string{"cpuUsr", "cpuNice", "cpuKrn", "cpuIdle", "cpuIowait", "cpuIrq", "cpuSoftIrq", "vmcpusteal"}
+	for i, val := range metricNames {
+		inspector.AddAttribute(val, params[i])
+	}
 
-	//     //Get CPU Type
-	//     text = getFileAsString("/proc/cpuinfo");
-	//     start = text.indexOf("name") + 7;
-	//     end = start + text.substring(start).indexOf(":");
-	//     String cpuType = text.substring(start, end - 9).trim();
-	//     attributes.put("cpuType", cpuType);
-
-	//     //Get CPU Model
-	//     start = text.indexOf("model") + 9;
-	//     end = start + text.substring(start).indexOf(":");
-	//     String cpuModel = text.substring(start, end - 11).trim();
-	//     attributes.put("cpuModel", cpuModel);
-
-	//     //Get CPU Core Count
-	//     start = text.indexOf("cpu cores") + 12;
-	//     end = start + text.substring(start).indexOf(":");
-	//     String cpuCores = text.substring(start, end - 9).trim();
-	//     attributes.put("cpuCores", cpuCores);
-
-	//     //Get CPU Metrics
-	//     String filename = "/proc/stat";
-	//     File f = new File(filename);
-	//     Path p = Paths.get(filename);
-	//     if (f.exists()) {
-	//         try (BufferedReader br = Files.newBufferedReader(p)) {
-	//             text = br.readLine();
-	//             String params[] = text.split(" ");
-
-	//             String[] metricNames = {"cpuUsr", "cpuNice", "cpuKrn", "cpuIdle",
-	//                 "cpuIowait", "cpuIrq", "cpuSoftIrq", "vmcpusteal"};
-
-	//             for (int i = 0; i < metricNames.length; i++) {
-	//                 attributes.put(metricNames[i], Long.parseLong(params[i + 2]));
-	//             }
-
-	//             while ((text = br.readLine()) != null && text.length() != 0) {
-	//                 if (text.contains("ctxt")) {
-	//                     String prms[] = text.split(" ");
-	//                     attributes.put("contextSwitches", Long.parseLong(prms[1]));
-	//                 }
-	//             }
-
-	//             br.close();
-	//         } catch (IOException ioe) {
-	//             //sb.append("Error reading file=" + filename);
-	//         }
-	//     }
-	// TODO
+	inspector.AddAttribute("contextSwitches", statMap["ctxt"])
 }
 
-// func parseFile(b []byte) map[string]interface{} {
-// 	fileMap := map[string]interface{}
+func parseCPUInfoFile() (map[string]string, error) {
+	fileMap := map[string]string{}
+	f, err := ioutil.ReadFile("/proc/cpuinfo")
+	if err != nil {
+		fmt.Printf("Error reading /proc/cpuinfo: err = %s", err)
+		return fileMap, err
+	}
 
-// 	bytes.Spli
-// }
+	lines := bytes.Split(f, []byte("\n"))
+	for _, line := range lines {
+		if bytes.Contains(line, []byte(":")) {
+			splitbycolon := bytes.Split(line, []byte(":"))
+			trimmedKey := strings.TrimSpace(string(splitbycolon[0]))
+			trimmedValue := strings.TrimSpace(string(splitbycolon[1]))
+			if _, exists := fileMap[trimmedKey]; !exists {
+				fileMap[trimmedKey] = trimmedValue
+			} else {
+				fileMap[trimmedKey+"#2"] = trimmedValue
+			}
+		}
+	}
+
+	return fileMap, nil
+}
+
+func parseStatFile() (map[string]string, error) {
+	fileMap := map[string]string{}
+	f, err := ioutil.ReadFile("/proc/stat")
+	if err != nil {
+		fmt.Printf("Error reading /proc/stat: err = %s", err)
+		return fileMap, err
+	}
+
+	lines := bytes.Split(f, []byte("\n"))
+	for _, line := range lines {
+		sLine := string(line)
+		nameAndValue := strings.SplitN(sLine, " ", 2)
+		if len(nameAndValue) > 1 {
+			fileMap[nameAndValue[0]] = strings.TrimSpace(nameAndValue[1])
+		}
+	}
+	return fileMap, nil
+}
 
 func (inspector *Inspector) InspectAllDeltas() {
-
 	if val, ok := inspector.attributes["frameworkRuntime"]; ok {
 		currentTime := time.Now().UnixNano()
 		codeRuntime := (currentTime - inspector.startTime) - val.(int64)
@@ -157,7 +159,22 @@ func (inspector *Inspector) InspectAllDeltas() {
 }
 
 func (inspector *Inspector) InspectCPUDelta() {
-	// TODO
+	statMap, err := parseStatFile()
+	if err != nil {
+		return
+	}
+
+	params := strings.Split(statMap["cpu"], " ")
+	metricNames := []string{"cpuUsr", "cpuNice", "cpuKrn", "cpuIdle", "cpuIowait", "cpuIrq", "cpuSoftIrq", "vmcpusteal"}
+	for i, val := range metricNames {
+		currentValue, _ := strconv.Atoi(params[i])
+		oldValue, _ := strconv.Atoi(inspector.GetAttribute(val).(string))
+		inspector.AddAttribute(val+"Delta", currentValue-oldValue)
+	}
+
+	currentContextSwitchesValue, _ := strconv.Atoi(statMap["ctxt"])
+	oldContextSwitches, _ := strconv.Atoi(inspector.GetAttribute("contextSwitches").(string))
+	inspector.AddAttribute("contextSwitchesDelta", currentContextSwitchesValue-oldContextSwitches)
 }
 
 func (inspector *Inspector) InspectMemoryDelta() {

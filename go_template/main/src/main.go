@@ -4,9 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/wlloyduw/SAAF/go_template/src/inspector"
-
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/daperez18/562_group2_project/go_template/main/src/inspector"
 )
 
 func HandleRequest(ctx context.Context, request Request) (map[string]interface{}, error) {
@@ -18,9 +17,6 @@ func HandleRequest(ctx context.Context, request Request) (map[string]interface{}
 
 	inspector.AddAttribute("message", fmt.Sprintf("Hello %s!", request.Name))
 	inspector.AddAttribute("request", request)
-
-	// sleeptime, _ := time.ParseDuration("1s")
-	// time.Sleep(sleeptime)
 
 	//****************END FUNCTION IMPLEMENTATION***************************
 
