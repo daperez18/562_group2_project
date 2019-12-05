@@ -31,6 +31,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
+import java.util.Date;
+import java.sql.Timestamp;
 
 /**
  * uwt.lambda_test::handleRequest
@@ -173,6 +175,7 @@ public class ServiceOne implements RequestHandler<Request, HashMap<String, Objec
         //Collect inital data.
         Inspector inspector = new Inspector();
         inspector.inspectAll();
+        LambdaLogger logger = context.getLogger();
         
         //****************START FUNCTION IMPLEMENTATION*************************
         //Add custom key/value attribute to SAAF's output. (OPTIONAL)
@@ -201,8 +204,16 @@ public class ServiceOne implements RequestHandler<Request, HashMap<String, Objec
         meta.setContentLength(bytes.length);
         meta.setContentType("text/plain");
         // Create new file on S3
+
+	Date date= new Date();
+	long time = date.getTime();
+	Timestamp ts = new Timestamp(time);
+
+	//"562sales_small.csv"
+	
         AmazonS3 s3Client2 = AmazonS3ClientBuilder.standard().build();
-        s3Client2.putObject(bucketname, key.substring(0, key.lastIndexOf('.')) +"_new.csv", is, meta);
+	logger.log(key.substring(0, key.lastIndexOf('.')) +"_"+  System.currentTimeMillis() +"_" + inspector.getAttribute("uuid") + ".csv");
+        s3Client2.putObject(bucketname, key.substring(0, key.lastIndexOf('.')) +"/"+  System.currentTimeMillis() +"_" + inspector.getAttribute("uuid") + ".csv", is, meta);
 
         Response response = new Response();
 

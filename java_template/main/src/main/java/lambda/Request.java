@@ -20,6 +20,7 @@ public class Request {
     JSONObject aggregateByJSON;
     String bucketname;
     String key;
+	String tablename;
 
     public String getBucketName() {
         return this.bucketname;
@@ -32,6 +33,19 @@ public class Request {
     public void setBucketname(String theBucketname) {
         this.bucketname = theBucketname;
     }
+
+	 public String getTableName() {
+        return this.tablename;
+    }
+    
+    public String getTableNameALLCAPS() {
+        return tablename.toUpperCase();
+    }
+
+    public void setTablename(String theTableName) {
+        this.tablename = theTableName;
+    }
+
 
 
     public String getKey() {
@@ -81,11 +95,12 @@ public class Request {
         return this.aggregateByJSON; 
     }
 	//constructor
-    public Request(String filterBy, String aggregateBy, String key, String bucketname) {
+    public Request(String filterBy, String aggregateBy, String key, String bucketname, String tablename) {
         this.setFilterBy(filterBy);
         this.setAggregateBy(aggregateBy);
         this.setBucketname(bucketname);
         this.setKey(key);
+		this.setTablename(tablename);
     }
 
 

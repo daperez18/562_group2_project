@@ -21,7 +21,8 @@ filterByAsString="$(echo $filterBy |jq tojson)"
 
 bucketname="testbucketohiodap";
 key="562sales_small.csv";
-json={"\"filterBy\"":$filterByAsString,"\"aggregateBy\"":$aggregateByAsString,"\"bucketname\"":"\"$bucketname\"","\"key\"":"\"$key\""}
+tablename="mytable";
+json={"\"filterBy\"":$filterByAsString,"\"aggregateBy\"":$aggregateByAsString,"\"bucketname\"":"\"$bucketname\"","\"key\"":"\"$key\"","\"tablename\"":"\"$tablename\""}
 
 
 
@@ -37,7 +38,7 @@ echo ""
 
 
 key="562sales_small_new.csv";
-json={"\"filterBy\"":$filterByAsString,"\"aggregateBy\"":$aggregateByAsString,"\"bucketname\"":"\"$bucketname\"","\"key\"":"\"$key\""}
+json={"\"filterBy\"":$filterByAsString,"\"aggregateBy\"":$aggregateByAsString,"\"bucketname\"":"\"$bucketname\"","\"key\"":"\"$key\"","\"tablename\"":"\"$tablename\""}
 
 echo "Invoking Lambda function service 2 load to database using AWS cli"
 time output=`aws lambda invoke --invocation-type RequestResponse --function-name  ServiceTwo --region us-east-2 --payload $json /dev/stdout | head -n 1 | head -c -2 ; echo`

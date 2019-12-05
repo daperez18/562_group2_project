@@ -70,7 +70,7 @@ public class ServiceTwoSQL implements RequestHandler<Request, HashMap<String, Ob
 
 
 
-    public void write_csv(List<String[]> info, String url,String username,String password, LambdaLogger logger) {
+    public void write_csv(List<String[]> info, String url,String username,String password, String mytable, LambdaLogger logger) {
         try 
         { 
             logger.log("checkcon: " + url + ", " +username +", " + password  );
@@ -78,25 +78,36 @@ public class ServiceTwoSQL implements RequestHandler<Request, HashMap<String, Ob
             logger.log("checkcon2");
 
             //String query = "Insert into mytable values(?,?,?,?, ?,?,?,?,?,?,?,?,?,?,?,?)";
-
+            PreparedStatement ps = con.prepareStatement("DROP TABLE IF EXISTS `" + mytable + "`;");
+            ps.execute();
+            ps = con.prepareStatement("CREATE TABLE "+ mytable + " (Region VARCHAR(40), Country VARCHAR(40), `Item Type` VARCHAR(40), `Sales Channel` VARCHAR(40),`Order Priority` VARCHAR(40), `Order Date` VARCHAR(40),`Order ID` INT PRIMARY KEY, `Ship Date` VARCHAR(40), `Units Sold` INT,`Unit Price` DOUBLE, `Unit Cost` DOUBLE, `Total Revenue` DOUBLE, `Total Cost` DOUBLE, `Total Profit` DOUBLE, `Order Processing Time` INT, `Gross Margin` FLOAT);");
+            ps.execute();
+	    logger.log("before insertion");
             for (int i =1; i <info.size(); i++) {
                 int col = info.get(i).length;
 
                 String currString ="";
                 for (int j = 0; j < col; j++) {
-                  //  System.out.println("i = " + i + ", j= " + j +"info size= " + info.size());
+
                     currString += "\"" +(info.get(i)[j]) +"\"";
 
                     if ((j+1)!=col)
                         currString += ",";
 
                 }
-                PreparedStatement ps = con.prepareStatement("insert into mytable values("+ currString + ");");
-                ps.execute();
+		
+		try {
+                	ps = con.prepareStatement("insert into " + mytable + " values("+ currString + ");");
+                	ps.execute();
+		} catch (Exception e) {
+			logger.log("thrown away insertion: " + i + " because error: " + e);
+		}
+
 
             }
-            PreparedStatement ps = con.prepareStatement("ALTER TABLE mytable ORDER BY `Order Id`");
-            ps.execute();
+	    logger.log("after insertion");
+            //ps = con.prepareStatement("ALTER TABLE " + mytable + " ORDER BY `Order Id`");
+            //ps.execute();
             con.close();
         }
         catch (Exception e) 
@@ -123,6 +134,8 @@ public class ServiceTwoSQL implements RequestHandler<Request, HashMap<String, Ob
         logger.log("chpa ");
         String bucketname = request.getBucketName();
         String key = request.getKey();
+	String mytable=request.getTableName();
+	logger.log(mytable);
         logger.log(bucketname);
         logger.log(key);
 
@@ -157,7 +170,7 @@ public class ServiceTwoSQL implements RequestHandler<Request, HashMap<String, Ob
             List<String[]> records = readcsv(objectData);
             logger.log("chp1 ");
 
-            write_csv(records, url, username, password, logger);
+            write_csv(records, url, username, password, mytable, logger);
             logger.log("chp2 ");
 
          
