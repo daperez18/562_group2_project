@@ -1,0 +1,17 @@
+{
+	"README": "See ./deploy/README.md for help!",
+
+	"functionName":     "test_go",
+
+	"lambdaHandler": "main",
+	"lambdaRoleARN": "arn:aws:iam::576608023434:role/lambda.with.everything",
+	"lambdaSubnets": "",
+	"lambdaSecurityGroups": "",
+
+	"memorySetting": "1024",
+
+	"test": {
+		"bucketname": "df.service.one",
+		"key": "100_Sales_Records.csv"
+	}
+}
