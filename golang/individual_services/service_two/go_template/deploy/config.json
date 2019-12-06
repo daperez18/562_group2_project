@@ -1,7 +1,7 @@
 {
 	"README": "See ./deploy/README.md for help!",
 
-	"functionName":     "test_go",
+	"functionName":     "ServiceTwoGo",
 
 	"lambdaHandler": "main",
 	"lambdaRoleARN": "arn:aws:iam::576608023434:role/lambda.with.everything",
@@ -11,8 +11,7 @@
 	"memorySetting": "1024",
 
 	"test": {
-		"name": "Bob",
-		"bucket": "somebucket",
-		"key": "somekey"
+		"bucketname": "df.service.one",
+		"key": "edited_100_Sales_Records.csv"
 	}
 }

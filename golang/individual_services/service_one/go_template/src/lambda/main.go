@@ -11,9 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws/session"
-
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/daperez18/562_group2_project/golang/individual_services/service_one/go_template/src/saaf"
 )
@@ -73,7 +72,10 @@ func HandleRequest(ctx context.Context, request saaf.Request) (map[string]interf
 
 	newKey := strings.TrimSuffix(key, ".csv") + "/" + strconv.FormatInt(time.Now().UnixNano(), 10) + ".csv"
 
-	s3client.PutObject(&s3.PutObjectInput{Body: bytes.NewReader(editedBody), Bucket: &bucketname, Key: &newKey})
+	_, err = s3client.PutObject(&s3.PutObjectInput{Body: bytes.NewReader(editedBody), Bucket: &bucketname, Key: &newKey})
+	if err != nil {
+		return nil, err
+	}
 
 	//****************END FUNCTION IMPLEMENTATION***************************
 

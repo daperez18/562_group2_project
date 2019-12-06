@@ -1,7 +1,7 @@
 {
 	"README": "See ./deploy/README.md for help!",
 
-	"functionName":     "test_go",
+	"functionName":     "ServiceOneGo",
 
 	"lambdaHandler": "main",
 	"lambdaRoleARN": "arn:aws:iam::576608023434:role/lambda.with.everything",

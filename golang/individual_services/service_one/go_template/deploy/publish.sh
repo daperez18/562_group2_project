@@ -35,12 +35,10 @@ echo "----- Deploying $function onto AWS Lambda -----"
 echo
 
 # build binary and zip it up
-# cd ..
-# cd src
 GOOS=linux go build -o ../target/main ../src/lambda
-cd ..
-cd target
-zip function.zip main
+zip ../target/function.zip ../target/main
+
+cd ../target
 
 echo
 echo "----- Creating Function $function ------"
