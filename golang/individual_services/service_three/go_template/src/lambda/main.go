@@ -1,25 +1,23 @@
-package lambda
+package main
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/daperez18/562_group2_project/go_template/main/src/inspector"
+	"github.com/daperez18/562_group2_project/golang/individual_services/service_three/go_template/src/saaf"
 )
 
 func main() {
 	lambda.Start(HandleRequest)
 }
 
-func HandleRequest(ctx context.Context, request Request) (map[string]interface{}, error) {
+func HandleRequest(ctx context.Context, request saaf.Request) (map[string]interface{}, error) {
 
-	inspector := inspector.New()
+	inspector := saaf.NewInspector()
 	inspector.InspectAll()
 
 	//****************START FUNCTION IMPLEMENTATION*************************
 
-	inspector.AddAttribute("message", fmt.Sprintf("Hello %s!", request.Name))
 	inspector.AddAttribute("request", request)
 
 	//****************END FUNCTION IMPLEMENTATION***************************

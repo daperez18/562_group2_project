@@ -20,7 +20,7 @@ type Inspector struct {
 	inspectedLinux     bool
 }
 
-func New() Inspector {
+func NewInspector() Inspector {
 	inspector := Inspector{}
 
 	inspector.startTime = time.Now().Unix()

@@ -1,7 +1,9 @@
 package saaf
 
 type Request struct {
-	Name   string `json:"name"`
-	Bucket string `json:"bucket"`
-	Key    string `json:"key"`
+	BucketName  string              `json:"bucketname"`
+	Key         string              `json:"key"`
+	TableName   string              `json:"tablename"`
+	FilterBy    map[string][]string `json:"filterBy"`
+	AggegrateBy map[string][]string `json:"aggregateBy"`
 }

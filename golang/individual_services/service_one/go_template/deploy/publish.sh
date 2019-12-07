@@ -43,7 +43,7 @@ zip function.zip main
 echo
 echo "----- Creating Function $function ------"
 echo
-# aws lambda create-function --function-name $function --runtime go1.x --zip-file fileb://function.zip --handler $lambdaHandler --role $lambdaRole --timeout 900
+aws lambda create-function --function-name $function --runtime go1.x --zip-file fileb://function.zip --handler $lambdaHandler --role $lambdaRole --timeout 900
 
 echo
 echo "----- Updating Function $function Code ------"
@@ -57,5 +57,4 @@ aws lambda update-function-configuration --function-name $function --memory-size
 
 echo
 echo Testing $function on AWS Lambda...
-aws lambda invoke --invocation-type RequestResponse --cli-read-timeout 3000 --function-name $function --payload $json /dev/stdout
-
+aws lambda invoke --invocation-type RequestResponse --cli-read-timeout 900 --function-name $function --payload $json /dev/stdout
