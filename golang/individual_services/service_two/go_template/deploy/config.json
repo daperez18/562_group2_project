@@ -5,13 +5,14 @@
 
 	"lambdaHandler": "main",
 	"lambdaRoleARN": "arn:aws:iam::576608023434:role/lambda.with.everything",
-	"lambdaSubnets": "",
-	"lambdaSecurityGroups": "",
+	"lambdaSubnets": "subnet-aabea6c2,subnet-9e9c25d2,subnet-0d085977",
+	"lambdaSecurityGroups": "sg-d1860cb3",
 
-	"memorySetting": "1024",
+	"memorySetting": "3008",
 
 	"test": {
 		"bucketname": "df.service.one",
-		"key": "edited_100_Sales_Records.csv"
+		"key": "edited_1000_Sales_Records.csv",
+		"tablename": "SalesData"
 	}
 }

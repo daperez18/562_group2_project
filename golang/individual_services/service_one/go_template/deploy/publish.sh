@@ -53,9 +53,9 @@ aws lambda update-function-code --function-name $function --zip-file fileb://fun
 echo
 echo "----- Updating Function $function Configuration ------"
 echo
-# aws lambda update-function-configuration --function-name $function --memory-size $memory --runtime go1.x --vpc-config SubnetIds=[$lambdaSubnets],SecurityGroupIds=[$lambdaSecurityGroups]
+aws lambda update-function-configuration --function-name $function --memory-size $memory --runtime go1.x --vpc-config SubnetIds=[$lambdaSubnets],SecurityGroupIds=[$lambdaSecurityGroups]
 
 echo
 echo Testing $function on AWS Lambda...
-aws lambda invoke --invocation-type RequestResponse --cli-read-timeout 900 --function-name $function --payload $json /dev/stdout
+aws lambda invoke --invocation-type RequestResponse --cli-read-timeout 3000 --function-name $function --payload $json /dev/stdout
 

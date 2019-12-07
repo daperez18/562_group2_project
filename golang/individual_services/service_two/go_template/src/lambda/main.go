@@ -2,8 +2,12 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"encoding/csv"
 	"fmt"
+	"strings"
+
+	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -22,9 +26,10 @@ func HandleRequest(ctx context.Context, request saaf.Request) (map[string]interf
 	//****************START FUNCTION IMPLEMENTATION*************************
 
 	inspector.AddAttribute("message", "bucketname is = "+request.BucketName+"! This is an attributed added to the Inspector!")
-	fmt.Println("Hello")
+
 	bucketname := request.BucketName
 	key := request.Key
+	tablename := request.TableName
 
 	mySession, err := session.NewSession()
 	if err != nil {
@@ -32,14 +37,10 @@ func HandleRequest(ctx context.Context, request saaf.Request) (map[string]interf
 	}
 	s3client := s3.New(mySession)
 
-	fmt.Println("Hello")
-
 	s3object, err := s3client.GetObject(&s3.GetObjectInput{Bucket: &bucketname, Key: &key})
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println("Hello2")
 
 	body := s3object.Body
 
@@ -49,13 +50,11 @@ func HandleRequest(ctx context.Context, request saaf.Request) (map[string]interf
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(records[0])
 
-	// for _, record := range records {
-	// 	fmt.Println(record)
-	// }
-
-	// writeRecords(records)
+	err = writeRecords(records, tablename)
+	if err != nil {
+		return nil, err
+	}
 
 	//****************END FUNCTION IMPLEMENTATION***************************
 
@@ -64,27 +63,69 @@ func HandleRequest(ctx context.Context, request saaf.Request) (map[string]interf
 	return inspector.Finish(), nil
 }
 
-// func writeRecords(records [][]string) error {
-// 	// var dbinfo = struct {
-// 	// 	password string
-// 	// 	url      string
-// 	// 	driver   string
-// 	// 	username string
-// 	// }{
-// 	// 	password: "562group2",
-// 	// 	url:      "jdbc:mysql://service2rds.cluster-cjpsmuknzd8o.us-east-2.rds.amazonaws.com:3306/562group2DB",
-// 	// 	driver:   "com.mysql.cj.jdbc.Driver",
-// 	// 	username: "tcss562",
-// 	// }
+func writeRecords(records [][]string, tablename string) error {
+	var dbinfo = struct {
+		password string
+		dbname   string
+		username string
+	}{
+		password: "tcss562group2",
+		dbname:   "tcp(service2rds.cluster-cwunkmk4eqtz.us-east-2.rds.amazonaws.com:3306)/service2db",
+		username: "tcss562",
+	}
 
-// 	db, err := gorm.Open("postgres", "wow")
-// 	if err != nil {
-// 		return err
-// 	}
+	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@%s", dbinfo.username, dbinfo.password, dbinfo.dbname))
+	if err != nil {
+		return err
+	}
+	defer db.Close()
 
-// 	tx := db.Begin()
+	err = db.Ping()
+	if err != nil {
+		return err
+	}
 
-// 	tx.Commit()
+	fmt.Println("Connection established")
 
-// 	return nil
-// }
+	// Drop the table
+	stmt, err := db.Prepare("DROP TABLE IF EXISTS `" + tablename + "`;")
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec()
+	if err != nil {
+		return err
+	}
+
+	// Create the table
+	stmt, err = db.Prepare("CREATE TABLE " + tablename + " (Region VARCHAR(40), Country VARCHAR(40), `Item Type` VARCHAR(40), `Sales Channel` VARCHAR(40),`Order Priority` VARCHAR(40), `Order Date` VARCHAR(40),`Order ID` INT PRIMARY KEY, `Ship Date` VARCHAR(40), `Units Sold` INT,`Unit Price` DOUBLE, `Unit Cost` DOUBLE, `Total Revenue` DOUBLE, `Total Cost` DOUBLE, `Total Profit` DOUBLE, `Order Processing Time` INT, `Gross Margin` FLOAT);")
+	if err != nil {
+		return err
+	}
+	_, err = stmt.Exec()
+	if err != nil {
+		return err
+	}
+
+	for i, record := range records {
+		if i == 0 {
+			continue
+		}
+
+		values := &strings.Builder{}
+		for _, field := range record {
+			values.WriteRune('"')
+			values.WriteString(field)
+			values.WriteRune('"')
+			values.WriteRune(',')
+		}
+		valuesString := strings.TrimSuffix(values.String(), ",")
+
+		_, err = db.Exec("insert into " + tablename + " values(" + valuesString + ");")
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
