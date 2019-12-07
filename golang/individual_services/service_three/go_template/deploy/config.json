@@ -12,10 +12,10 @@
 
 	"test": {
 		"bucketname": "df.service.one",
-		"key": "edited_1000_Sales_Records.csv",
+		"key": "QueryResults.csv",
 		"tablename": "SalesData",
 		"filterBy": {
-			"Region": ["Australia", "Oceania"],
+			"Region": ["Australia_and_Oceania"],
 			"Item_Type": ["Office_Supplies"],
 			"Sales_Channel": ["Offline"],
 			"Order_Priority": ["Medium"],
