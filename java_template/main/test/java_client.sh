@@ -21,14 +21,14 @@ filterByAsString="$(echo $filterBy |jq tojson)"
 
 bucketname="testbucketohiodap";
 key="562sales_small.csv";
-tablename="mytable";
-json={"\"filterBy\"":$filterByAsString,"\"aggregateBy\"":$aggregateByAsString,"\"bucketname\"":"\"$bucketname\"","\"key\"":"\"$key\"","\"tablename\"":"\"$tablename\""}
+tablename="mytable1";
+json={"\"filterBy\"":$filterBy,"\"aggregateBy\"":$aggregateBy,"\"bucketname\"":"\"$bucketname\"","\"key\"":"\"$key\"","\"tablename\"":"\"$tablename\""}
 
 
 
 echo "Invoking Lambda function service 1 load and transform using AWS cli"
 #time output=`curl -s -H "Content-Type: application/json" -X POST -d  $json2 https://yc67ejcsk9.execute-api.us-east-1.amazonaws.com/ServiceOne_dev`
-time output=`aws lambda invoke --invocation-type RequestResponse --function-name  ServiceOne --region us-east-2 --payload $json /dev/stdout | head -n 1 | head -c -2 ; echo`
+#time output=`aws lambda invoke --invocation-type RequestResponse --function-name  ServiceOne --region us-east-2 --payload $json /dev/stdout | head -n 1 | head -c -2 ; echo`
 
 echo ""
 echo "CURL ENCODE RESULT:"
@@ -41,7 +41,7 @@ key="562sales_small_new.csv";
 json={"\"filterBy\"":$filterByAsString,"\"aggregateBy\"":$aggregateByAsString,"\"bucketname\"":"\"$bucketname\"","\"key\"":"\"$key\"","\"tablename\"":"\"$tablename\""}
 
 echo "Invoking Lambda function service 2 load to database using AWS cli"
-time output=`aws lambda invoke --invocation-type RequestResponse --function-name  ServiceTwo --region us-east-2 --payload $json /dev/stdout | head -n 1 | head -c -2 ; echo`
+#time output=`aws lambda invoke --invocation-type RequestResponse --function-name  ServiceTwo --region us-east-2 --payload $json /dev/stdout | head -n 1 | head -c -2 ; echo`
 echo ""
 echo "AWS CLI RESULT:"
 echo $output

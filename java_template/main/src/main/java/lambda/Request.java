@@ -69,9 +69,11 @@ public class Request {
     }
 
     public void setFilterBy(String filterBy) {
-		this.filterByJSON=new JSONObject(filterBy);
-        this.filterBy = filterBy;
-    }
+		//this.filterByJSON= filterBy;//new JSONObject(filterBy);
+        //this.filterBy = filterBy.toString();
+		this.filterBy = filterBy;  
+		this.filterByJSON = new JSONObject(filterBy);
+	}
 
     public JSONObject getFilterByAsJSONOBJ() {
             return this.filterByJSON;
@@ -87,7 +89,9 @@ public class Request {
     }
 
     public void setAggregateBy(String aggregateBy) {
-        this.aggregateBy = aggregateBy;
+        //this.aggregateBy = aggregateBy.toString();
+		//this.aggregateByJSON = aggregateBy;
+		this.aggregateBy = aggregateBy;    
 		this.aggregateByJSON = new JSONObject(aggregateBy);
     }
 
