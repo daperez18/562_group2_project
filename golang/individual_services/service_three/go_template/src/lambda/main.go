@@ -170,7 +170,6 @@ func doQuery(queryString, tablename string) ([][]string, error) {
 		)
 
 		err = rows.Scan(&maxUnitSold, &minUnitSold, &avgOrderProcessingTime, &avgGrossMargin, &avgUnitsSold, &sumUnitSolds, &sumTotalRevenue, &sumTotalProfit, &filteredBy)
-		// err = rows.Scan(&maxUnitSold, &minUnitSold, &avgOrderProcessingTime, avgGrossMargin, avgUnitsSold, sumUnitSolds, sumTotalRevenue, sumTotalProfit, filteredBy)
 		if err != nil {
 			return allThings, err
 		}

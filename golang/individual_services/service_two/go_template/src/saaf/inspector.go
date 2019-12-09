@@ -11,7 +11,10 @@ import (
 
 type Inspector struct {
 	startTime  int64
-	attributes map[string]interface{}
+	startTime2 time.Time
+
+	attributes        map[string]interface{}
+	privateAttributes map[string]interface{}
 
 	inspectedCPU       bool
 	inspectedMemory    bool
@@ -23,11 +26,15 @@ type Inspector struct {
 func NewInspector() Inspector {
 	inspector := Inspector{}
 
-	inspector.startTime = time.Now().Unix()
+	inspector.startTime = time.Now().UnixNano()
 	inspector.attributes = make(map[string]interface{})
 
 	inspector.attributes["version"] = 0.4
 	inspector.attributes["lang"] = "go"
+
+	inspector.privateAttributes = make(map[string]interface{})
+	inspector.privateAttributes["startTime"] = time.Now()
+	inspector.startTime2 = time.Now()
 
 	return inspector
 }
@@ -149,8 +156,9 @@ func parseStatFile() (map[string]string, error) {
 
 func (inspector *Inspector) InspectAllDeltas() {
 	if val, ok := inspector.attributes["frameworkRuntime"]; ok {
-		currentTime := time.Now().Unix()
-		codeRuntime := (currentTime - inspector.startTime) - val.(int64)
+		// currentTime := time.Now().UnixNano()
+		// codeRuntime := (currentTime - inspector.startTime) - val.(int64)
+		codeRuntime := time.Since(inspector.startTime2).Milliseconds() - val.(int64)
 		inspector.attributes["userRuntime"] = codeRuntime
 	}
 
@@ -182,14 +190,20 @@ func (inspector *Inspector) InspectMemoryDelta() {
 }
 
 func (inspector *Inspector) AddTimeStamp(key string) {
-	currentTime := time.Now().Unix()
-	runtime := (currentTime - inspector.startTime)
-	inspector.attributes[key] = runtime
+	inspector.attributes[key] = time.Since(inspector.startTime2).Milliseconds()
+
+	// currentTime := time.Now().UnixNano()
+	// currentTime := time.Now().Unix()
+	// runtime := (currentTime - inspector.startTime)
+	// inspector.attributes[key] = runtime
 }
 
 func (inspector *Inspector) Finish() map[string]interface{} {
-	endTime := time.Now().Unix()
-	runtime := (endTime - inspector.startTime)
-	inspector.attributes["runtime"] = runtime
+	// endTime := time.Now().UnixNano()
+	// endTime := time.Now().Unix()
+	// runtime := (endTime - inspector.startTime)
+	// inspector.attributes["runtime"] = runtime
+
+	inspector.attributes["runtime"] = time.Since(inspector.startTime2).Milliseconds()
 	return inspector.attributes
 }
