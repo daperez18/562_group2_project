@@ -76,7 +76,7 @@ public class ServiceThree implements RequestHandler<Request, HashMap<String, Obj
                     for(int j=0;j<arrJson.length();j++) {
                             String whereString="WHERE ";
 
-                            String filterVal = "`" +FILTER_BY_VALUES[i].replace('_', ' ') +"`";
+                            String filterVal = "`" +FILTER_BY_VALUES[i].replace('_', ' ') +"`"; // WHERE `Region`="Australia"
                             //if (i == FILTER_BY_VALUES.length-1 && j ==arrJson.length()-1) {
 
                             whereString += filterVal +"=\"" +arrJson.getString(j).replace('_', ' ') +"\"" ;
@@ -203,8 +203,6 @@ public class ServiceThree implements RequestHandler<Request, HashMap<String, Obj
             String queryResults = convertRsToJSON(rs);
 
             AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();  
-            S3Object s3Object = s3Client.getObject(new GetObjectRequest(bucketname, key));
-            InputStream objectData = s3Object.getObjectContent();
 
             s3Client.putObject(bucketname, "QueryResults.txt", queryResults);
 
@@ -215,13 +213,7 @@ public class ServiceThree implements RequestHandler<Request, HashMap<String, Obj
             logger.log("Got an exception working with MySQL! ");
             logger.log(e.getMessage());
         }
-        //AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();  
-        //S3Object s3Object = s3Client.getObject(new GetObjectRequest(bucketname, key));
-        //InputStream objectData = s3Object.getObjectContent();
 
-
-        //Print log information to the Lambda log as needed
-        //logger.log("log message...");
         
         // Set return result in Response class, class is marshalled into JSON
         r.setValue("temp");
