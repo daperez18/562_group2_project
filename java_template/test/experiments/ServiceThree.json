@@ -4,7 +4,7 @@
     "payloads": [{
 	"bucketname": "testbucketohiodap",
 	"key": "562sales_small_new.csv",
-	"filterBy": "{ \n\t\t\"Region\": [\"Austrailia\", \"Oceania\"],\n\t\t\"Item_Type\":[\"Office_Supplies\"],\n\t\t\"Sales_Channel\":[\"Offline\"],\n\t\t\"Order_Priority\":[\"Medium\"],\n\t\t\"Country\":[\"Fiji\"]\n\t}",
+	"filterBy": "{ \n\t\t\"Region\": [\"Austrailia,_Oceania\"],\n\t\t\"Item_Type\":[\"Office_Supplies\"],\n\t\t\"Sales_Channel\":[\"Offline\"],\n\t\t\"Order_Priority\":[\"Medium\"],\n\t\t\"Country\":[\"Fiji\"]\n\t}",
 
 	"aggregateBy" : "{\n\t\t\"max\":[\"Units_Sold\"],\n\t\t\"min\":[\"Units_Sold\"],\n\t\t\"avg\":[\"Order_Processing_Time\",\"Gross_Margin\",\"Units_Sold\"],\n\t\t\"sum\":[\"Units_Sold\",\"Total_Revenue\",\"Total_Profit\"]\n\t}",
 	"tablename" : "mytable"

@@ -51,123 +51,85 @@ public class ServiceOne implements RequestHandler<Request, HashMap<String, Objec
      * @return HashMap that Lambda will automatically convert into JSON.
      */
 
-    public void addColumn(String path,String fileName) throws IOException{
-        BufferedReader br=null;
-        BufferedWriter bw=null;
-        final String lineSep=System.getProperty("line.separator");
-
-        try {
-            File file = new File(path, fileName);
-            File file2 = new File(path, fileName+".1");//so the
-                        //names don't conflict or just use different folders
-
-            br = new BufferedReader(new InputStreamReader(new FileInputStream(file))) ;
-            bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file2)));
-            String line = null;
-                        int i=0;
-            for ( line = br.readLine(); line != null; line = br.readLine(),i++)
-            {               
-
-                String addedColumn = "a";//String.valueOf(data.get(i));
-                bw.write(line+addedColumn+lineSep);
-        }
-
-        }catch(Exception e){
-            System.out.println(e);
-        }finally  {
-            if(br!=null)
-                br.close();
-            if(bw!=null)
-                bw.close();
-        }
-
-    }
-    public List<String[]> readcsv(InputStream input) {
+        
+    public CSVReader readcsv(InputStream input) {
         List<String[]> records = new ArrayList<String[]>();
+        CSVReader csvReader = null;
         try {
-            CSVReader csvReader = new CSVReader(new InputStreamReader(input));
-            records = csvReader.readAll();
+            csvReader = new CSVReader(new InputStreamReader(input));
+            //records = csvReader.readAll();
+
         } catch (Exception e) {
             System.out.println("error");
         }
-        
-        return records;
+        return csvReader;
     }
 
-    public StringWriter write_csv(List<String[]> info) {
-        StringWriter sw = new StringWriter();
-        for (int i =0; i < info.get(0).length; i++) {
-            sw.append(info.get(0)[i]);
+    public StringBuilder write_csv(CSVReader reader, LambdaLogger logger) {
 
-            if (i+1 !=info.get(0).length) {
-                    sw.append(",");
-            }
-            else {
-                
-                sw.append(",Order Processing Time, Gross Margin");
-                sw.append("\n");
-            }
-        }
+	String[] entries = null;
+	StringBuilder sb = new StringBuilder();
+        try {
+            entries = reader.readNext();
+            ArrayList loaded_entries = new ArrayList(Arrays.asList(entries));
+            sb.append(String.join(",", loaded_entries) +",Order Processing Time, Gross Margin\n");
+            int i = 0;
+            Set<Integer> unique_ids = new HashSet<Integer>();        
 
-        //order id = 6
-        Set<Integer> unique_ids = new HashSet<Integer>();        
-        //info.length is amount of rows
-        //info.get(i).length is values in row  i
-        for (int i =1; i <info.size(); i++) {
-            int col = info.get(i).length;
-            if (!unique_ids.contains(info.get(i)[6])) {
-            
-                for (int j = 0; j < col; j++) {
-                  //  System.out.println("i = " + i + ", j= " + j +"info size= " + info.size());
+            while ((entries = reader.readNext()) !=null) {
+     
+                loaded_entries = new ArrayList(Arrays.asList(entries));
+                if (unique_ids.contains(Integer.parseInt((String)loaded_entries.get(6)))) {
+                    continue;
+                } else {
 
-                    if (j == 4) {
-                        String val = info.get(i)[4];
-                        if (val.equals("C")) {
-                            sw.append("Critical");
-                        }
-                        else if (val.equals("L")){
-                            sw.append("Low");
-                        }
-                        else if (val.equals("M")){
-                            sw.append("Medium");
-                        }
-                        else if (val.equals("H")) {
-                            sw.append("High");
-                        }
-                    } else {
-                        sw.append(info.get(i)[j]);
-                    }
-
-                    if ((j+1)!=col)
-                        sw.append(",");
-                    else {
-                        String date1=info.get(i)[5];
-                        String date2=info.get(i)[7];
-                        String[] date1_values=date1.split("/");
-                        String[] date2_values=date2.split("/");
-                        int month = Integer.parseInt(date1_values[0]);
-                        int day = Integer.parseInt(date1_values[1]);
-                        int year = Integer.parseInt(date1_values[2]);
-
-                        int month2 = Integer.parseInt(date2_values[0]);
-                        int day2 = Integer.parseInt(date2_values[1]);
-                        int year2 = Integer.parseInt(date2_values[2]);
-
-                        int order_time= ((year2 - year) * 365) + ((month2 - month) * 30) + (day2 - day);
-
-                        float gross_margin = Float.parseFloat(info.get(i)[13]) / Float.parseFloat(info.get(i)[11]);
-                        sw.append("," + order_time + "," + gross_margin);
-                        sw.append("\n");
+                    String val = (String)loaded_entries.get(4);
+                    if (val.equals("C")) {
+                        loaded_entries.set(4, "Critical");
 
                     }
+                    else if (val.equals("L")){
+                        loaded_entries.set(4, "Low");
+                    }
+                    else if (val.equals("M")){
+                        loaded_entries.set(4, "Medium");
+                    }
+                    else if (val.equals("H")) {
+                        loaded_entries.set(4, "High");
+                    }
 
+
+                    String[] date1_values=((String)loaded_entries.get(5)).split("/");
+                    String[] date2_values=((String)loaded_entries.get(7)).split("/");
+                    int month = Integer.parseInt(date1_values[0]);
+                    int day = Integer.parseInt(date1_values[1]);
+                    int year = Integer.parseInt(date1_values[2]);
+
+                    int month2 = Integer.parseInt(date2_values[0]);
+                    int day2 = Integer.parseInt(date2_values[1]);
+                    int year2 = Integer.parseInt(date2_values[2]);
+
+                    int order_time= ((year2 - year) * 365) + ((month2 - month) * 30) + (day2 - day);
+                    float gross_margin = Float.parseFloat(((String)loaded_entries.get(13))) / Float.parseFloat(((String)loaded_entries.get(11))); 
+                    loaded_entries.add(Integer.toString(order_time));
+                    loaded_entries.add(String.valueOf(gross_margin));
+
+                    if (i %1000 == 0) {
+                        logger.log("added records " + i);
+                    }
+                    i +=1;
+                    sb.append(String.join(",", loaded_entries) +"\n");
+                    unique_ids.add(Integer.parseInt((String)loaded_entries.get(6)));
                 }
-            } else {
-                unique_ids.add(Integer.parseInt(info.get(i)[6]));
             }
+
+        } catch (Exception e) {
+             throw new RuntimeException("Can't parse file " +  e);
         }
-        return sw;
+	return sb;
     }
+
+
 
 
     public HashMap<String, Object> handleRequest(Request request, Context context) {
@@ -194,10 +156,12 @@ public class ServiceOne implements RequestHandler<Request, HashMap<String, Objec
 
         InputStream objectData = s3Object.getObjectContent();
         //scanning data line by line
-        
-        List<String[]> records = readcsv(objectData);
-        StringWriter sw = write_csv(records);
-        
+        logger.log("reading csv into records start");
+        CSVReader records = readcsv(objectData);
+        logger.log("finished reading records");
+        StringBuilder sw = write_csv(records, logger);
+        logger.log("finished writing records");        
+
         byte[] bytes = sw.toString().getBytes(StandardCharsets.UTF_8);
         InputStream is = new ByteArrayInputStream(bytes);
         ObjectMetadata meta = new ObjectMetadata();
@@ -214,7 +178,7 @@ public class ServiceOne implements RequestHandler<Request, HashMap<String, Objec
         AmazonS3 s3Client2 = AmazonS3ClientBuilder.standard().build();
 	logger.log(key.substring(0, key.lastIndexOf('.')) +"_"+  System.currentTimeMillis() +"_" + inspector.getAttribute("uuid") + ".csv");
         s3Client2.putObject(bucketname, key.substring(0, key.lastIndexOf('.')) +"/"+  System.currentTimeMillis() +"_" + inspector.getAttribute("uuid") + ".csv", is, meta);
-
+        //s3Client2.putObject(bucketname, key.substring(0, key.lastIndexOf('.')) + "_new.csv", is, meta);
         Response response = new Response();
 
         response.setValue("Bucket: " + bucketname + " key:" + key + " processed. record 0 = ");
