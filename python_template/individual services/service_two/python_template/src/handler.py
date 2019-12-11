@@ -114,5 +114,4 @@ def write_output(content):
         print(ex.args)
     finally:
         #con.close()
-      
         print()
