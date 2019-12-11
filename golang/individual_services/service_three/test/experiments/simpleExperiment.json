@@ -2,13 +2,28 @@
     "callWithCLI": true,
     "memorySettings": [],
     "payloads": [
-        { "name": "Bob" },
-        { "name": "Joe" },
-        { "name": "Steve" }
+      {
+        "bucketname": "df.service.one",
+        "key": "QueryResults.csv",
+        "tablename": "SalesData",
+        "filterBy": {
+          "Region": ["Australia_and_Oceania"],
+          "Item_Type": ["Office_Supplies"],
+          "Sales_Channel": ["Offline"],
+          "Order_Priority": ["Medium"],
+          "Country": ["Fiji"]
+        },
+        "aggregateBy": {
+          "max": ["Units_Sold"],
+          "min": ["Units_Sold"],
+          "avg": ["Order_Processing_Time", "Gross_Margin", "Units_Sold"],
+          "sum": ["Units_Sold", "Total_Revenue", "Total_Profit"]
+        }
+      }
     ],
 
-    "runs": 100,
-    "threads": 100,
+    "runs": 50,
+    "threads": 50,
     "iterations": 1,
     "sleepTime": 5,
     "randomSeed": 42,

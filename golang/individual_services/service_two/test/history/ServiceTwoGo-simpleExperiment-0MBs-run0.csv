@@ -1,0 +1,17 @@
+2019-12-09 13:49:43.333602 - Python Partest Version 0.5
+Setting up test: runsperthread=1 threads=1 totalruns=1 payload=[{'bucketname': 'df.service.one' 'key': 'edited_10000_Sales_Records.csv' 'tablename': 'SalesData'}]
+
+Raw results of each run:
+1_run_id,2_thread_id,contextSwitches,contextSwitchesDelta,cpuCores,cpuIdle,cpuIdleDelta,cpuIowait,cpuIowaitDelta,cpuIrq,cpuIrqDelta,cpuKrn,cpuKrnDelta,cpuModel,cpuNice,cpuNiceDelta,cpuSoftIrq,cpuSoftIrqDelta,cpuType,cpuUsr,cpuUsrDelta,frameworkRuntime,latency,message,payload,roundTripTime,runtime,userRuntime,vmcpusteal,vmcpustealDelta
+0,0,27995,85363,2,1123401,8704,3,0,0,0,106,61,62,0,0,1,17,Intel(R) Xeon(R) Processor @ 2.50GHz - Model 62,39,31,0,1197.7,bucketname is = df.service.one! This is an attributed added to the Inspector!,{'bucketname': 'df.service.one'; 'key': 'edited_10000_Sales_Records.csv'; 'tablename': 'SalesData'},45799.7,44602,44602,43,23
+Successful Runs: 1
+
+Category cpuType:
+cpuType,uses,avg_contextSwitches,avg_contextSwitchesDelta,avg_cpuCores,avg_cpuIdleDelta,avg_cpuIowaitDelta,avg_cpuIrqDelta,avg_cpuKrnDelta,avg_cpuNiceDelta,avg_cpuSoftIrqDelta,avg_cpuUsrDelta,avg_frameworkRuntime,avg_latency,avg_roundTripTime,avg_runtime,avg_userRuntime,avg_vmcpusteal,avg_vmcpustealDelta
+Intel(R) Xeon(R) Processor @ 2.50GHz - Model 62,1,27995.00,85363.00,2.00,8704.00,0.00,0.00,61.00,0.00,17.00,31.00,0.00,1197.70,45799.70,44602.00,44602.00,43.00,23.00
+Total number of unique cpuTypes: 1
+
+Category zAll:
+zAll,uses,avg_contextSwitches,avg_contextSwitchesDelta,avg_cpuCores,avg_cpuIdleDelta,avg_cpuIowaitDelta,avg_cpuIrqDelta,avg_cpuKrnDelta,avg_cpuNiceDelta,avg_cpuSoftIrqDelta,avg_cpuUsrDelta,avg_frameworkRuntime,avg_latency,avg_roundTripTime,avg_runtime,avg_userRuntime,avg_vmcpusteal,avg_vmcpustealDelta
+Final Results:,1,27995.00,85363.00,2.00,8704.00,0.00,0.00,61.00,0.00,17.00,31.00,0.00,1197.70,45799.70,44602.00,44602.00,43.00,23.00
+Total number of unique zAlls: 1

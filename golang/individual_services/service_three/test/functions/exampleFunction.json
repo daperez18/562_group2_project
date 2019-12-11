@@ -1,6 +1,6 @@
 {
-	"function": "helloWorld",
+	"function": "ServiceThreeGo",
     "platform": "AWS Lambda",
-    "source": "../nodejs_template",
+    "source": "../go_template",
     "endpoint": ""
 }

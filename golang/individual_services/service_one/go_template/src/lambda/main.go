@@ -27,7 +27,7 @@ func HandleRequest(ctx context.Context, request saaf.Request) (map[string]interf
 
 	//****************START FUNCTION IMPLEMENTATION*************************
 
-	inspector.AddAttribute("message", "bucketname is = "+request.BucketName+"! This is an attributed added to the Inspector!")
+	inspector.AddAttribute("message", "bucketname = "+request.BucketName+", key = "+request.Key)
 
 	bucketname := request.BucketName
 	key := request.Key
