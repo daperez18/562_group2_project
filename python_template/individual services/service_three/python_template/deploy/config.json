@@ -1,15 +1,28 @@
 {
 	"README": "See ./deploy/README.md for help!",
 
-	"functionName": "python-hello",
+	"functionName": "python-services-three",
 	
 	"lambdaRoleARN": "arn:aws:iam::037262423719:role/role_lamba_full_access_everything",
-	"lambdaSubnets": "",
-	"lambdaSecurityGroups": "",
-
+	"lambdaSubnets": "subnet-3d7b6155,subnet-7566de39,subnet-52431328",
+	"lambdaSecurityGroups": "sg-3949055b",
+	"memorySetting": "3008",
 	"test": {
 		"name": "Bob",
-		"bucketname": "testbucketohiodap",
-		"key": "562sales_small.csv"
+		"bucketname": "cvs.bucket.reh",
+		"key": "newdata.csv",
+		"filterBy": {
+			"Region": ["Australia_and_Oceania"],
+			"Item_Type": ["Office_Supplies"],
+			"Sales_Channel": ["Offline"],
+			"Order_Priority": ["Medium"],
+			"Country": ["Fiji"]
+		},
+		"aggregateBy": {
+			"max": ["Units_Sold"],
+			"min": ["Units_Sold"],
+			"avg": ["Order_Processing_Time", "Gross_Margin", "Units_Sold"],
+			"sum": ["Units_Sold", "Total_Revenue", "Total_Profit"]
+		}
 	}
 }

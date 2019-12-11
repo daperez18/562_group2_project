@@ -4,7 +4,7 @@ import os
 import sys
 import boto3
 import csv
-
+import mysql.connector
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
 
@@ -46,11 +46,8 @@ def yourFunction(request, context):
 
     #test_str=csv_data["Region"]
     test_val=""
-
-
-
-
-
+    content = read_content(csvcontent)
+    output = write_output(content)
     # Add custom message and finish the function
     if ('key' in request):
         inspector.addAttribute("bucketname", "bucketname " + str(request['bucketname']) + "!")
@@ -61,3 +58,36 @@ def yourFunction(request, context):
     
     inspector.inspectCPUDelta()
     return inspector.finish()
+
+def read_content(content):
+    list = []
+    try:
+        temp = csv.reader(content, delimiter=',')
+        for row in temp:
+            list.append(row)
+    
+    except Exception as ex:
+        print(ex.__str__())
+
+    return list
+
+def write_output(content):
+    try:
+        connection = mysql.connector.connect(url="url", databasename="dbname", username="tcss562", password="password")
+        cursor = connection.cursor();
+        
+        for i in range(1, len(content)):
+            col = len(content[i])
+            curr_string = ""
+            for j in range(col):
+                curr_string += "\"" + content[i][j] + "\""
+
+                if (j+1)!=col:
+                    curr_string += ","
+            cursor.execute("insert into mytable values("+ curr_string + ");")
+        cursor("ALTER TABLE mytable ORDER BY `Order Id`")    
+    except Exception as ex:
+        print(ex.__str___())
+    finally:
+        connection.close()
+        cursor.close()

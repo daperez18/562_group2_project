@@ -32,7 +32,7 @@ json=`cat config.json | jq -c '.test'`
 ibmjson=`cat config.json | jq '.test' | tr -d '"' | tr -d '{' | tr -d '}' | tr -d ':'`
 
 echo
-echo Deploying $function...
+echo Deploying "C" $function...
 echo
 
 #Define the memory value.
@@ -41,6 +41,8 @@ if [[ ! -z $5 ]]
 then
 	memory=$5
 fi
+
+echo "-------got this far---------"
 
 # Deploy onto AWS Lambda.
 if [[ ! -z $1 && $1 -eq 1 ]]
@@ -53,9 +55,15 @@ then
 	rm -rf build
 	mkdir build
 
+	echo "------Removed the Build folder ------"
+
 	# Copy files to build folder.
 	cp -R ../src/* ./build
 	cp -R ../platforms/aws/* ./build
+
+	echo 
+	echo "+++++ Copied files to build folder +++++"
+	echo
 
 	# Zip and submit to AWS Lambda.
 	cd ./build
@@ -67,8 +75,13 @@ then
 	cd ..
 
 	echo
+	echo "+++++ created index.zp +++++"
+
+	echo
 	echo Testing function on AWS Lambda...
 	aws lambda invoke --invocation-type RequestResponse --cli-read-timeout 900 --function-name $function --payload $json /dev/stdout
+
+	echo "%%%%%%%% Complete %%%%%%%%%%"
 fi
 
 # Deploy onto Google Cloud Functions

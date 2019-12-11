@@ -1,15 +1,15 @@
 {
 	"README": "See ./deploy/README.md for help!",
 
-	"functionName": "python-hello",
+	"functionName": "python-services",
 	
 	"lambdaRoleARN": "arn:aws:iam::037262423719:role/role_lamba_full_access_everything",
 	"lambdaSubnets": "",
 	"lambdaSecurityGroups": "",
-
+	"memorySetting": "3008",
 	"test": {
 		"name": "Bob",
-		"bucketname": "testbucketohiodap",
-		"key": "562sales_small.csv"
+		"bucketname": "cvs.bucket.reh",
+		"key": "10000_Sales_Records.csv"
 	}
 }
