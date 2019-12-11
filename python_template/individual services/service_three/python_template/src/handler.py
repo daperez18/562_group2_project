@@ -4,7 +4,7 @@ import os
 import sys
 import boto3
 import csv
-import mysql.connector
+import pymysql
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
 

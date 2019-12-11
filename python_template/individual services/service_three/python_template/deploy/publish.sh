@@ -56,7 +56,7 @@ then
 	# Copy files to build folder.
 	cp -R ../src/* ./build
 	cp -R ../platforms/aws/* ./build
-
+	cp -R ./package/* ./build
 	# Zip and submit to AWS Lambda.
 	cd ./build
 	zip -X -r ./index.zip *
