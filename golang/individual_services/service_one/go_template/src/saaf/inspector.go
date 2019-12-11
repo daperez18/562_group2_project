@@ -10,8 +10,7 @@ import (
 )
 
 type Inspector struct {
-	startTime  int64
-	startTime2 time.Time
+	startTime time.Time
 
 	attributes        map[string]interface{}
 	privateAttributes map[string]interface{}
@@ -26,15 +25,13 @@ type Inspector struct {
 func NewInspector() Inspector {
 	inspector := Inspector{}
 
-	inspector.startTime = time.Now().UnixNano()
+	inspector.startTime = time.Now()
 	inspector.attributes = make(map[string]interface{})
 
 	inspector.attributes["version"] = 0.4
 	inspector.attributes["lang"] = "go"
 
 	inspector.privateAttributes = make(map[string]interface{})
-	inspector.privateAttributes["startTime"] = time.Now()
-	inspector.startTime2 = time.Now()
 
 	return inspector
 }
@@ -82,17 +79,17 @@ func (inspector *Inspector) InspectCPU() {
 
 	//Get CPU Type
 	if modelName, exists := cpuInfoMap["model name"]; exists {
-		inspector.AddAttribute("cpuType", modelName)
+		inspector.attributes["cpuType"] = modelName
 	}
 
 	//Get CPU Model
 	if cpuModel, exists := cpuInfoMap["model"]; exists {
-		inspector.AddAttribute("cpuModel", cpuModel)
+		inspector.attributes["cpuModel"] = cpuModel
 	}
 
 	//Get CPU Core Count
 	if cpuCores, exists := cpuInfoMap["cpu cores"]; exists {
-		inspector.AddAttribute("cpuCores", cpuCores)
+		inspector.attributes["cpuCores"] = cpuCores
 	}
 
 	// readStatFile
@@ -104,10 +101,12 @@ func (inspector *Inspector) InspectCPU() {
 	params := strings.Split(statMap["cpu"], " ")
 	metricNames := []string{"cpuUsr", "cpuNice", "cpuKrn", "cpuIdle", "cpuIowait", "cpuIrq", "cpuSoftIrq", "vmcpusteal"}
 	for i, val := range metricNames {
-		inspector.AddAttribute(val, params[i])
+		// inspector.AddAttribute(val, params[i])
+		inspector.privateAttributes[val] = params[i]
 	}
 
-	inspector.AddAttribute("contextSwitches", statMap["ctxt"])
+	// inspector.AddAttribute("contextSwitches", statMap["ctxt"])
+	inspector.privateAttributes["contextSwitches"] = statMap["ctxt"]
 }
 
 func parseCPUInfoFile() (map[string]string, error) {
@@ -156,10 +155,7 @@ func parseStatFile() (map[string]string, error) {
 
 func (inspector *Inspector) InspectAllDeltas() {
 	if val, ok := inspector.attributes["frameworkRuntime"]; ok {
-		// currentTime := time.Now().UnixNano()
-		// codeRuntime := (currentTime - inspector.startTime) - val.(int64)
-		codeRuntime := time.Since(inspector.startTime2).Milliseconds() - val.(int64)
-		inspector.attributes["userRuntime"] = codeRuntime
+		inspector.attributes["userRuntime"] = time.Since(inspector.startTime).Milliseconds() - val.(int64)
 	}
 
 	inspector.InspectCPUDelta()
@@ -176,13 +172,13 @@ func (inspector *Inspector) InspectCPUDelta() {
 	metricNames := []string{"cpuUsr", "cpuNice", "cpuKrn", "cpuIdle", "cpuIowait", "cpuIrq", "cpuSoftIrq", "vmcpusteal"}
 	for i, val := range metricNames {
 		currentValue, _ := strconv.Atoi(params[i])
-		oldValue, _ := strconv.Atoi(inspector.GetAttribute(val).(string))
-		inspector.AddAttribute(val+"Delta", currentValue-oldValue)
+		oldValue, _ := strconv.Atoi(inspector.privateAttributes[val].(string))
+		inspector.attributes[val+"Delta"] = currentValue - oldValue
 	}
 
 	currentContextSwitchesValue, _ := strconv.Atoi(statMap["ctxt"])
-	oldContextSwitches, _ := strconv.Atoi(inspector.GetAttribute("contextSwitches").(string))
-	inspector.AddAttribute("contextSwitchesDelta", currentContextSwitchesValue-oldContextSwitches)
+	oldContextSwitches, _ := strconv.Atoi(inspector.privateAttributes["contextSwitches"].(string))
+	inspector.attributes["contextSwitchesDelta"] = currentContextSwitchesValue - oldContextSwitches
 }
 
 func (inspector *Inspector) InspectMemoryDelta() {
@@ -190,20 +186,10 @@ func (inspector *Inspector) InspectMemoryDelta() {
 }
 
 func (inspector *Inspector) AddTimeStamp(key string) {
-	inspector.attributes[key] = time.Since(inspector.startTime2).Milliseconds()
-
-	// currentTime := time.Now().UnixNano()
-	// currentTime := time.Now().Unix()
-	// runtime := (currentTime - inspector.startTime)
-	// inspector.attributes[key] = runtime
+	inspector.attributes[key] = time.Since(inspector.startTime).Milliseconds()
 }
 
 func (inspector *Inspector) Finish() map[string]interface{} {
-	// endTime := time.Now().UnixNano()
-	// endTime := time.Now().Unix()
-	// runtime := (endTime - inspector.startTime)
-	// inspector.attributes["runtime"] = runtime
-
-	inspector.attributes["runtime"] = time.Since(inspector.startTime2).Milliseconds()
+	inspector.attributes["runtime"] = time.Since(inspector.startTime).Milliseconds()
 	return inspector.attributes
 }

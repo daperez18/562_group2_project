@@ -43,7 +43,7 @@ zip function.zip main
 echo
 echo "----- Creating Function $function ------"
 echo
-aws lambda create-function --function-name $function --runtime go1.x --zip-file fileb://function.zip --handler $lambdaHandler --role $lambdaRole --timeout 900
+# aws lambda create-function --function-name $function --runtime go1.x --zip-file fileb://function.zip --handler $lambdaHandler --role $lambdaRole --timeout 900
 
 echo
 echo "----- Updating Function $function Code ------"
@@ -53,7 +53,7 @@ aws lambda update-function-code --function-name $function --zip-file fileb://fun
 echo
 echo "----- Updating Function $function Configuration ------"
 echo
-aws lambda update-function-configuration --function-name $function --memory-size $memory --runtime go1.x --vpc-config SubnetIds=[$lambdaSubnets],SecurityGroupIds=[$lambdaSecurityGroups]
+# aws lambda update-function-configuration --function-name $function --memory-size $memory --runtime go1.x --vpc-config SubnetIds=[$lambdaSubnets],SecurityGroupIds=[$lambdaSecurityGroups]
 
 echo
 echo Testing $function on AWS Lambda...
