@@ -19,6 +19,16 @@ import (
 	"github.com/daperez18/562_group2_project/golang/individual_services/service_three/go_template/src/saaf"
 )
 
+var dbinfo = struct {
+	password string
+	dbname   string
+	username string
+}{
+	password: "tcss562group2",
+	dbname:   "tcp(service2rds.cluster-cwunkmk4eqtz.us-east-2.rds.amazonaws.com:3306)/service2db",
+	username: "tcss562",
+}
+
 func main() {
 	lambda.Start(HandleRequest)
 }
@@ -44,8 +54,7 @@ func HandleRequest(ctx context.Context, request saaf.Request) (map[string]interf
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("Results.....")
-	fmt.Printf("%#v", results)
+	// fmt.Printf("Results = %#v", results)
 
 	mySession, err := session.NewSession()
 	if err != nil {
@@ -73,6 +82,12 @@ func HandleRequest(ctx context.Context, request saaf.Request) (map[string]interf
 	// newKey := strings.TrimSuffix(key, ".csv") + "/" + strconv.FormatInt(time.Now().UnixNano(), 10) + ".csv"
 
 	_, err = s3client.PutObject(&s3.PutObjectInput{Body: bytes.NewReader(editedBody), Bucket: &bucketname, Key: &key})
+	if err != nil {
+		return nil, err
+	}
+
+	// do extra table queries
+	err = stressTest(tablename, 100)
 	if err != nil {
 		return nil, err
 	}
@@ -121,16 +136,6 @@ func constructQueryString(filters, aggregates map[string][]string, tablename str
 }
 
 func doQuery(queryString, tablename string) ([][]string, error) {
-	var dbinfo = struct {
-		password string
-		dbname   string
-		username string
-	}{
-		password: "tcss562group2",
-		dbname:   "tcp(service2rds.cluster-cwunkmk4eqtz.us-east-2.rds.amazonaws.com:3306)/service2db",
-		username: "tcss562",
-	}
-
 	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@%s", dbinfo.username, dbinfo.password, dbinfo.dbname))
 	if err != nil {
 		return nil, err
@@ -141,8 +146,7 @@ func doQuery(queryString, tablename string) ([][]string, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Println("Connection established")
+	// fmt.Println("Connection established")
 
 	rows, err := db.Query(queryString)
 	if err != nil {
@@ -153,7 +157,7 @@ func doQuery(queryString, tablename string) ([][]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(columnNames)
+	// fmt.Println(columnNames)
 
 	allThings := [][]string{columnNames}
 	for rows.Next() {
@@ -170,7 +174,6 @@ func doQuery(queryString, tablename string) ([][]string, error) {
 		)
 
 		err = rows.Scan(&maxUnitSold, &minUnitSold, &avgOrderProcessingTime, &avgGrossMargin, &avgUnitsSold, &sumUnitSolds, &sumTotalRevenue, &sumTotalProfit, &filteredBy)
-		// err = rows.Scan(&maxUnitSold, &minUnitSold, &avgOrderProcessingTime, avgGrossMargin, avgUnitsSold, sumUnitSolds, sumTotalRevenue, sumTotalProfit, filteredBy)
 		if err != nil {
 			return allThings, err
 		}
@@ -193,14 +196,73 @@ func doQuery(queryString, tablename string) ([][]string, error) {
 	return allThings, nil
 }
 
-type rowStruct struct {
-	AvgOrderProcessingTime float32
-	AvgGrossMargin         float32
-	AvgUnitsSold           float32
-	SumUnitSolds           int
-	SumTotalRevenue        float32
-	MaxUnitSold            int
-	MinUnitSold            int
-	SumTotalProfit         float32
-	FilteredBy             string
+func stressTest(tablename string, iterations int) error {
+	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@%s", dbinfo.username, dbinfo.password, dbinfo.dbname))
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	err = db.Ping()
+	if err != nil {
+		return err
+	}
+	// fmt.Println("Connection established")
+
+	rowsReturned := 0
+	for i := 0; i < iterations; i++ {
+		rows, err := db.Query(fmt.Sprintf("SELECT * FROM %s;", tablename))
+		if err != nil {
+			return err
+		}
+
+		for rows.Next() {
+			row := &SalesDataRow{}
+			err = rows.Scan(
+				&row.Region,
+				&row.Country,
+				&row.ItemType,
+				&row.SalesChannel,
+				&row.OrderPriority,
+				&row.OrderDate,
+				&row.OrderID,
+				&row.ShipDate,
+				&row.UnitsSold,
+				&row.UnitPrice,
+				&row.UnitCost,
+				&row.TotalRevenue,
+				&row.TotalCost,
+				&row.TotalProfit,
+				&row.OrderProcessingTime,
+				&row.GrossMargin)
+			if err != nil {
+				return err
+			}
+			rowsReturned++
+			// fmt.Printf("%#v\n", row)
+		}
+	}
+
+	fmt.Printf("%d total rows returned\n", rowsReturned)
+
+	return nil
+}
+
+type SalesDataRow struct {
+	Region              string
+	Country             string
+	ItemType            string
+	SalesChannel        string
+	OrderPriority       string
+	OrderDate           string
+	OrderID             string
+	ShipDate            string
+	UnitsSold           string
+	UnitPrice           string
+	UnitCost            string
+	TotalRevenue        string
+	TotalCost           string
+	TotalProfit         string
+	OrderProcessingTime string
+	GrossMargin         string
 }

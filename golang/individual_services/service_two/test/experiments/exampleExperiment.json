@@ -2,14 +2,12 @@
     "callWithCLI": true,
     "memorySettings": [],
     "payloads": [
-        { "name": "Bob" },
-        { "name": "Joe" },
-        { "name": "Steve" }
+      {"bucketname": "df.service.one", "key": "edited_10000_Sales_Records.csv","tablename": "SalesData"}
     ],
 
-    "runs": 50,
-    "threads": 50,
-    "iterations": 3,
+    "runs": 1,
+    "threads": 1,
+    "iterations": 10,
     "sleepTime": 5,
     "randomSeed": 42,
 

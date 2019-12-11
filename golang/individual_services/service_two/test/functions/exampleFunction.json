@@ -1,6 +1,6 @@
 {
-	"function": "helloWorld",
+	"function": "ServiceTwoGo",
     "platform": "AWS Lambda",
-    "source": "../nodejs_template",
+    "source": "../go_template",
     "endpoint": ""
 }
