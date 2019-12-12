@@ -80,7 +80,8 @@ def write_output(content):
         user="tscc562", password="m23j452345", db="562Group2DB", connect_timeout=900)
         print("connected to db")
         cursor = con.cursor()
-        cursor.execute("DROP TABLE mytable")
+        cursor.execute("DROP TABLE IF EXISTS mytable")
+        print("Removed mytable")
         #'Region,
         # Country,
         # Item Type,
@@ -97,7 +98,7 @@ def write_output(content):
         # Total Profit, 
         # Oder Processing Time, 
         # Gross Margin'
-        cursor.execute("CREATE TABLE mytable(Region VARCHAR(50), Country VARCHAR(50), Item_Type VARCHAR(50), Sales_Channel VARCHAR(50),Order_Priority VARCHAR(50),Order_Date VARCHAR(50), Order_ID int, Ship_Date VARCHAR(50),Units_Sold int,Unit_Price decimal(13,4),Unit_Cost decimal(13,4),Total_Revenue decimal(13,4),Total_Cost decimal(13,4),Total_Profit decimal(13,4), Order_Processing_Time bigint, Gross_Margin decimal(13,4) )  ")
+        cursor.execute("CREATE TABLE mytable(Region VARCHAR(50), Country VARCHAR(50), `Item Type` VARCHAR(50), `Sales Channel` VARCHAR(50), `Order Priority` VARCHAR(50),`Order Date` VARCHAR(50), `Order ID` int, `Ship Date` VARCHAR(50), `Units Sold` DOUBLE, `Unit Price` DOUBLE, `Unit Cost` DOUBLE, `Total Revenue` DOUBLE, `Total Cost` DOUBLE, `Total Profit` DOUBLE, `Order Processing Time` DOUBLE, `Gross Margin` DOUBLE )  ")
         for i in range(1, len(content)):
             col = len(content[i])
             curr_string = ""
@@ -108,7 +109,7 @@ def write_output(content):
                     curr_string += ","
         
             cursor.execute("INSERT INTO mytable VALUES("+ curr_string + ");")
-        cursor.execute("ALTER TABLE mytable ORDER BY `Order_ID`")    
+        cursor.execute("ALTER TABLE mytable ORDER BY `Order ID`")    
         con.commit()
     except Exception as ex:
         print(ex.args)

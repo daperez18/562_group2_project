@@ -40,54 +40,88 @@ def yourFunction(request, context):
         i = i+1
     csv_data = csv.DictReader(csvcontent)
 
-    #csv_input = pd.read_csv('input.csv')
-    #csv_input['Berries'] = csv_input['Name']
-    #csv_input.to_csv('output.csv', index=False)
-
-    #test_str=csv_data["Region"]
     test_val=""
-    content = read_content(csvcontent)
-    output = write_output(content)
+
+    query_string = contstruct_query_string(request['filterBy'], request['aggregateBy'], request['tablename'])
+
+    #print(query_string);
+
+    query_result = exexute_query(query_string)
+
+    json_result = convert_query_to_json(query_result)
+    dest_object_name = "newjson.txt"
+    s3.put_object(Bucket=bucketname, Key=dest_object_name,Body=(bytes(json_result.encode('UTF-8'))))
+
+
     # Add custom message and finish the function
     if ('key' in request):
         inspector.addAttribute("bucketname", "bucketname " + str(request['bucketname']) + "!")
         inspector.addAttribute("key", str(request['key']))
         inspector.addAttribute("test val", csvcontent[0])
 
-
-    
     inspector.inspectCPUDelta()
     return inspector.finish()
 
-def read_content(content):
-    list = []
-    try:
-        temp = csv.reader(content, delimiter=',')
-        for row in temp:
-            list.append(row)
-    
-    except Exception as ex:
-        print(ex.__str__())
 
-    return list
+def contstruct_query_string(filterBy, aggregateBy, tablename):
+    aggr = ""
+    for i, key in enumerate(aggregateBy):
+        for j, val in enumerate(aggregateBy[str(key)]):
+            aggr += key.upper()
+            aggr += "(`"
+            temp = str.replace(val, "_", " ")
+            aggr += str(temp)
+            aggr += "`), "
+    fil = ""
+    for i, key in enumerate(filterBy):
+        for j, val in enumerate(filterBy[str(key)]):
+            fil += "SELECT "
+            fil += aggr
+            fil += "'WHERE "
+            temp_key = str.replace(key, "_", " " )
+            fil += temp_key
+            fil += "="
+            temp_val = str.replace(val, "_", " ")
+            fil += temp_val
+            fil += "' AS `Filtered By` FROM "
+            fil += tablename
+            fil += " WHERE `"
+            fil += temp_key
+            fil += "`='"
+            fil += temp_val
+            fil += "' UNION "
+    k = fil.rfind(" UNION ")
+    result = fil[:k]
+    result += ";"   
+    print(result)
+    return result
 
-def write_output(content):
+def exexute_query(query_string):
+    rows = {}
     try:
-        connection = mysql.connector.connect(url="url", databasename="dbname", username="tcss562", password="password")
-        cursor = connection.cursor();
+        print("Connecting...")
         
-        for i in range(1, len(content)):
-            col = len(content[i])
-            curr_string = ""
-            for j in range(col):
-                curr_string += "\"" + content[i][j] + "\""
+        con = pymysql.connect(host="tcss562group2.cluster-cj6rdxvm4ac3.us-east-2.rds.amazonaws.com", 
+        user="tscc562", password="m23j452345", db="562Group2DB", connect_timeout=1800, cursorclass=pymysql.cursors.DictCursor)
+        
+        print("Connected to db") 
+        
+        cursor = con.cursor()
+        
+        print("Executing Long Running Query")
+        
+        cursor.execute(query_string)
+        
+        rows = cursor.fetchall()
 
-                if (j+1)!=col:
-                    curr_string += ","
-            cursor.execute("insert into mytable values("+ curr_string + ");")
-        cursor("ALTER TABLE mytable ORDER BY `Order Id`")    
     except Exception as ex:
-        print(ex.__str___())
+        print(ex.args)
     finally:
-        connection.close()
-        cursor.close()
+        print("Closed DB Connection")   
+    return rows
+
+def convert_query_to_json(rows):
+    json_result = json.dumps(rows)
+    return json_result       
+        
+
