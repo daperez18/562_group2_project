@@ -28,8 +28,8 @@
     "removeDuplicateContainers": false,
 
     "openCSV": true,
-    "combineSheets": false,
-    "warmupBuffer": 0
+    "combineSheets": true,
+    "warmupBuffer": 1
 } 
 
 

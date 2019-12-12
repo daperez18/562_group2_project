@@ -12,7 +12,7 @@
 
 	"test": {
 		"bucketname": "df.service.one",
-		"key": "edited_100000_Sales_Records.csv",
+		"key": "edited_10000_Sales_Records.csv",
 		"tablename": "SalesData"
 	}
 }
