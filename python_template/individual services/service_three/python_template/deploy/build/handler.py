@@ -44,8 +44,6 @@ def yourFunction(request, context):
 
     query_string = contstruct_query_string(request['filterBy'], request['aggregateBy'], request['tablename'])
 
-    #print(query_string);
-
     query_result = exexute_query(query_string)
 
     json_result = convert_query_to_json(query_result)
@@ -117,7 +115,8 @@ def exexute_query(query_string):
     except Exception as ex:
         print(ex.args)
     finally:
-        print("Closed DB Connection")   
+        print("Closed DB Connection") 
+        con.close()  
     return rows
 
 def convert_query_to_json(rows):
