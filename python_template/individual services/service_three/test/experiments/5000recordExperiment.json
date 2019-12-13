@@ -2,7 +2,21 @@
     "callWithCLI": true,
     "memorySettings": [],
     "payloads": [
-        { "bucketname": "cvs.bucket.reh", "key": "5000_Sales_Records.csv"}
+        { "bucketname": "cvs.bucket.reh", "key": "5000_Sales_Records.csv", "tablename": "mytable",
+          "filterBy": {
+            "Region": ["Australia_and_Oceania"],
+            "Item_Type": ["Office_Supplies"],
+            "Sales_Channel": ["Offline"],
+            "Order_Priority": ["Medium"],
+            "Country": ["Fiji"]
+          },
+          "aggregateBy": {
+            "max": ["Units_Sold"],
+            "min": ["Units_Sold"],
+            "avg": ["Order_Processing_Time", "Gross_Margin", "Units_Sold"],
+            "sum": ["Units_Sold", "Total_Revenue", "Total_Profit"]
+          }
+        }
     ],
 
     "runs": 50,

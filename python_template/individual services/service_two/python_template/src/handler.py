@@ -35,17 +35,7 @@ def yourFunction(request, context):
     s3 = boto3.client('s3')
     csvfile = s3.get_object(Bucket=bucketname, Key=key)
     csvcontent = csvfile['Body'].read().split(b'\n')
-    i = 0
-    for line in csvcontent:
-        csvcontent[i] = line.decode("utf-8")
-        i = i+1
-    csv_data = csv.DictReader(csvcontent)
 
-    #csv_input = pd.read_csv('input.csv')
-    #csv_input['Berries'] = csv_input['Name']
-    #csv_input.to_csv('output.csv', index=False)
-
-    #test_str=csv_data["Region"]
     test_val=""
     content = read_content(csvcontent)
     output = write_output(content)

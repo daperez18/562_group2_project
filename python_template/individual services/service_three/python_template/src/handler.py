@@ -35,11 +35,6 @@ def yourFunction(request, context):
     s3 = boto3.client('s3')
     csvfile = s3.get_object(Bucket=bucketname, Key=key)
     csvcontent = csvfile['Body'].read().split(b'\n')
-    i = 0
-    for line in csvcontent:
-        csvcontent[i] = line.decode("utf-8")
-        i = i+1
-    csv_data = csv.DictReader(csvcontent)
 
     test_val=""
 
@@ -103,7 +98,6 @@ def contstruct_query_string(filterBy, aggregateBy, tablename):
     k = fil.rfind(" UNION ")
     result = fil[:k]
     result += ";"   
-    print(result)
     return result
 
 def exexute_query(query_string):
@@ -124,8 +118,6 @@ def exexute_query(query_string):
 
         rows = cursor.fetchall()
 
-        for i in range(100):
-            cursor.execute("SELECT * FROM mytable")
 
     except Exception as ex:
         print(ex.args)
