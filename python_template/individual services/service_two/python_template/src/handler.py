@@ -49,7 +49,7 @@ def yourFunction(request, context):
     test_val=""
     content = read_content(csvcontent)
     output = write_output(content)
-    print(csvcontent)
+
     # Add custom message and finish the function
     if ('key' in request):
         inspector.addAttribute("bucketname", "bucketname " + str(request['bucketname']) + "!")
@@ -78,26 +78,12 @@ def write_output(content):
         print("Connecting...")
         con = pymysql.connect(host="tcss562group2.cluster-cj6rdxvm4ac3.us-east-2.rds.amazonaws.com", 
         user="tscc562", password="m23j452345", db="562Group2DB", connect_timeout=900)
+        
         print("connected to db")
         cursor = con.cursor()
         cursor.execute("DROP TABLE IF EXISTS mytable")
         print("Removed mytable")
-        #'Region,
-        # Country,
-        # Item Type,
-        # Sales Channel,
-        # Order Priority,
-        # Order Date,
-        # Order ID,
-        # Ship Date,
-        # Units Sold,
-        # Unit Price,
-        # Unit Cost,
-        # Total Revenue,
-        # Total Cost,
-        # Total Profit, 
-        # Oder Processing Time, 
-        # Gross Margin'
+
         cursor.execute("CREATE TABLE mytable(Region VARCHAR(50), Country VARCHAR(50), `Item Type` VARCHAR(50), `Sales Channel` VARCHAR(50), `Order Priority` VARCHAR(50),`Order Date` VARCHAR(50), `Order ID` int, `Ship Date` VARCHAR(50), `Units Sold` DOUBLE, `Unit Price` DOUBLE, `Unit Cost` DOUBLE, `Total Revenue` DOUBLE, `Total Cost` DOUBLE, `Total Profit` DOUBLE, `Order Processing Time` DOUBLE, `Gross Margin` DOUBLE )  ")
         for i in range(1, len(content)):
             col = len(content[i])
@@ -109,10 +95,13 @@ def write_output(content):
                     curr_string += ","
         
             cursor.execute("INSERT INTO mytable VALUES("+ curr_string + ");")
-        cursor.execute("ALTER TABLE mytable ORDER BY `Order ID`")    
+            cursor.close()
+    
+        cursor.execute("ALTER TABLE mytable ORDER BY `Order ID`") 
+        cursor.close()   
         con.commit()
     except Exception as ex:
         print(ex.args)
     finally:
-        #con.close()
-        print()
+        con.close()
+      

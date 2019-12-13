@@ -5,6 +5,7 @@ import sys
 import boto3
 import csv
 import pymysql
+import io
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__))))
 
@@ -47,9 +48,20 @@ def yourFunction(request, context):
     query_result = exexute_query(query_string)
 
     json_result = convert_query_to_json(query_result)
-    dest_object_name = "newjson.txt"
-    s3.put_object(Bucket=bucketname, Key=dest_object_name,Body=(bytes(json_result.encode('UTF-8'))))
 
+    csv_result = convert_json_csv(query_result)
+
+    #dest_object_name = "newjson.txt"
+
+    #my_bytes = bytes(json_result.encode('UTF-8'))
+
+    #s3.put_object(Bucket=bucketname, Key=dest_object_name,Body=(my_bytes))
+
+    my_bytes = bytes(csv_result.getvalue())
+    
+    s3.put_object(Bucket=bucketname, Key="results.csv",Body=(my_bytes))
+    
+    #bytes = csv_result.getvalue()
 
     # Add custom message and finish the function
     if ('key' in request):
@@ -109,8 +121,13 @@ def exexute_query(query_string):
         print("Executing Long Running Query")
         
         cursor.execute(query_string)
-        
+
         rows = cursor.fetchall()
+
+        for i in range(100):
+            cursor.execute("SELECT * FROM mytable")
+        
+
 
     except Exception as ex:
         print(ex.args)
@@ -122,5 +139,24 @@ def exexute_query(query_string):
 def convert_query_to_json(rows):
     json_result = json.dumps(rows)
     return json_result       
-        
+
+def convert_json_csv(rows):
+    file = io.BytesIO()
+
+    file.write(str.encode(",".join(rows[0].keys())))
+
+    file.write(b'\n')
+
+    value = ""
+
+    for i in range(0, len(rows)):
+        for key in rows[i].keys():
+            value += str(rows[i].get(key)) + ','
+        k = str.rfind(value, ',')
+        temp = value[:k]
+        value = temp
+        value += "\n"
+    file.write(str.encode(value))
+
+    return file
 

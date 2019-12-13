@@ -4,12 +4,13 @@
 	"functionName": "python-services",
 	
 	"lambdaRoleARN": "arn:aws:iam::037262423719:role/role_lamba_full_access_everything",
-	"lambdaSubnets": "",
-	"lambdaSecurityGroups": "",
+	"lambdaSubnets": "subnet-3d7b6155,subnet-7566de39,subnet-52431328",
+	"lambdaSecurityGroups": "sg-3949055b",
 	"memorySetting": "3008",
 	"test": {
 		"name": "Bob",
 		"bucketname": "cvs.bucket.reh",
-		"key": "10000_Sales_Records.csv"
+		"key": "1000_Sales_Records.csv"
 	}
 }
+

@@ -6,11 +6,11 @@
 	"lambdaRoleARN": "arn:aws:iam::037262423719:role/service-role/python-service-three-full-access",
 	"lambdaSubnets": "subnet-3d7b6155,subnet-7566de39,subnet-52431328",
 	"lambdaSecurityGroups": "sg-3949055b",
-
+	"memorySetting": "3008",
 	"test": {
 		"name": "Bob",
 		"bucketname": "cvs.bucket.reh",
-		"key": "newdata.csv",
+		"key": "1500000_newdata.csv",
 		"tablename": "mytable",
 		"filterBy": {
 			"Region": ["Australia_and_Oceania"],

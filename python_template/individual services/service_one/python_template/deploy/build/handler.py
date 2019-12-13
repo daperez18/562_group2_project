@@ -62,13 +62,18 @@ def write_csv(my_list):
 
 def write_csv_to_BytesIO(file1, my_list):
 
+    result = ""
     for count,row in enumerate(my_list[0]):
-        file1.write(str.encode(row))
+        result += str(row)
+        #file1.write(str.encode(row))
         if count+1 != len(my_list[0]):
-            file1.write(b",")
+            result += ","
+            #file1.write(b",")
         else:
-            file1.write(b', Oder Processing Time, Gross Margin')
-            file1.write(b'\n')
+            #file1.write(b', Oder Processing Time, Gross Margin')
+            #file1.write(b'\n')
+            result += ", Oder Processing Time, Gross Margin"
+            result += "\n"
             
     ids = set()
 
@@ -83,18 +88,24 @@ def write_csv_to_BytesIO(file1, my_list):
                 if j == 4:
                     val = my_list[i][4]
                     if val == "C":
-                        file1.write(b"Critical")
+                        #file1.write(b"Critical")
+                        result += "Critical"
                     elif val == "L":
-                        file1.write(b'Low')
+                        #file1.write(b'Low')
+                        result += "Low"
                     elif val == "M":
-                        file1.write(b'Medium')
+                        #file1.write(b'Medium')
+                        result += "Medium"
                     elif val == "H":
-                        file1.write(b'High')
+                        #file1.write(b'High')
+                        result += "High"
                 else :
-                    file1.write(str.encode(my_list[i][j]))
+                    #file1.write(str.encode(my_list[i][j]))
+                    result += my_list[i][j]
 
                 if (j + 1) != col:
-                    file1.write(b",")
+                    #file1.write(b",")
+                    result += ","
                 else:
                     date1 = my_list[i][5]
                     date2 = my_list[i][7]
@@ -113,11 +124,14 @@ def write_csv_to_BytesIO(file1, my_list):
                     
                     gross_margin = float(my_list[i][13]) / float(my_list[i][11])
 
-                    file1.write(b',' + str.encode(str(order_time)) + b', ' + str.encode(str(gross_margin)))
-                    file1.write(b'\n')
+                    #file1.write(b',' + str.encode(str(order_time)) + b', ' + str.encode(str(gross_margin)))
+                    #file1.write(b'\n')
+                    result += ", {0}, {1}".format(order_time, gross_margin)
+                    result += "\n"
                     
         else:
             ids.add(int(uid))
+    file1.write(str.encode(result))
     
 
 def yourFunction(request, context):
@@ -148,10 +162,11 @@ def yourFunction(request, context):
     output = write_csv(content)
     
     bytes = output.getvalue();
-   
-    dest_object_name = "newdata.csv"
 
-    print(csvcontent)
+    record_size = str(request['key']).split("_")
+
+   
+    dest_object_name = "{0}_newdata.csv".format(record_size[0])
 
     s3.put_object(Bucket=bucketname, Key=dest_object_name, Body=bytes)
 
