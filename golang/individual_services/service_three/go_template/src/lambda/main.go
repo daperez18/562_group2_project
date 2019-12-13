@@ -25,7 +25,7 @@ var dbinfo = struct {
 	username string
 }{
 	password: "tcss562group2",
-	dbname:   "tcp(service2rds.cluster-cwunkmk4eqtz.us-east-2.rds.amazonaws.com:3306)/service2db",
+	dbname:   "tcp(service2rds.cluster-cwunkmk4eqtz.us-east-2.rds.amazonaws.com:3306)/service2db?multiStatements=true&interpolateParams=true",
 	username: "tcss562",
 }
 
@@ -211,7 +211,12 @@ func stressTest(tablename string, iterations int) error {
 
 	rowsReturned := 0
 	for i := 0; i < iterations; i++ {
-		rows, err := db.Query(fmt.Sprintf("SELECT * FROM %s;", tablename))
+		conn, err := db.Conn(context.Background())
+		if err != nil {
+			return nil
+		}
+
+		rows, err := conn.QueryContext(context.Background(), fmt.Sprintf("SELECT * FROM %s;", tablename))
 		if err != nil {
 			return err
 		}
@@ -241,6 +246,7 @@ func stressTest(tablename string, iterations int) error {
 			rowsReturned++
 			// fmt.Printf("%#v\n", row)
 		}
+		conn.Close()
 	}
 
 	fmt.Printf("%d total rows returned\n", rowsReturned)
