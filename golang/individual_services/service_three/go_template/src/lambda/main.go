@@ -87,10 +87,10 @@ func HandleRequest(ctx context.Context, request saaf.Request) (map[string]interf
 	}
 
 	// do extra table queries
-	err = stressTest(tablename, 100)
-	if err != nil {
-		return nil, err
-	}
+	// err = stressTest(tablename, 100)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	//****************END FUNCTION IMPLEMENTATION***************************
 
@@ -152,6 +152,7 @@ func doQuery(queryString, tablename string) ([][]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	columnNames, err := rows.Columns()
 	if err != nil {
@@ -209,47 +210,49 @@ func stressTest(tablename string, iterations int) error {
 	}
 	// fmt.Println("Connection established")
 
-	rowsReturned := 0
+	// rowsReturned := 0
 	for i := 0; i < iterations; i++ {
 		conn, err := db.Conn(context.Background())
 		if err != nil {
 			return nil
 		}
 
+		// rows, err := conn.QueryContext(context.Background(), fmt.Sprintf("SELECT * FROM %s;", tablename))
 		rows, err := conn.QueryContext(context.Background(), fmt.Sprintf("SELECT * FROM %s;", tablename))
 		if err != nil {
 			return err
 		}
-
 		for rows.Next() {
-			row := &SalesDataRow{}
-			err = rows.Scan(
-				&row.Region,
-				&row.Country,
-				&row.ItemType,
-				&row.SalesChannel,
-				&row.OrderPriority,
-				&row.OrderDate,
-				&row.OrderID,
-				&row.ShipDate,
-				&row.UnitsSold,
-				&row.UnitPrice,
-				&row.UnitCost,
-				&row.TotalRevenue,
-				&row.TotalCost,
-				&row.TotalProfit,
-				&row.OrderProcessingTime,
-				&row.GrossMargin)
-			if err != nil {
-				return err
-			}
-			rowsReturned++
-			// fmt.Printf("%#v\n", row)
 		}
+		// for rows.Next() {
+		// 	row := &SalesDataRow{}
+		// 	err = rows.Scan(
+		// 		&row.Region,
+		// 		&row.Country,
+		// 		&row.ItemType,
+		// 		&row.SalesChannel,
+		// 		&row.OrderPriority,
+		// 		&row.OrderDate,
+		// 		&row.OrderID,
+		// 		&row.ShipDate,
+		// 		&row.UnitsSold,
+		// 		&row.UnitPrice,
+		// 		&row.UnitCost,
+		// 		&row.TotalRevenue,
+		// 		&row.TotalCost,
+		// 		&row.TotalProfit,
+		// 		&row.OrderProcessingTime,
+		// 		&row.GrossMargin)
+		// 	if err != nil {
+		// 		return err
+		// // 	}
+		// 	rowsReturned++
+		// 	// fmt.Printf("%#v\n", row)
+		// }
 		conn.Close()
 	}
 
-	fmt.Printf("%d total rows returned\n", rowsReturned)
+	// fmt.Printf("%d total rows returned\n", rowsReturned)
 
 	return nil
 }

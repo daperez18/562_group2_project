@@ -25,7 +25,7 @@
     "runs": 50,
     "threads": 50,
     "iterations": 1,
-    "sleepTime": 5,
+    "sleepTime": 2,
     "randomSeed": 42,
 
     "outputGroups": ["cpuType", "containerID", "vmID", "zAll"],
