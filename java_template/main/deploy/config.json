@@ -12,11 +12,11 @@
 	"test": {
 
 	"bucketname": "testbucketohiodap",
-	"key": "562sales_500000_new.csv",
+	"key": "562sales_100_new.csv",
 	"filterBy": "{\"Region\":[\"Australia,_Oceania\"],\"Item_Type\":[\"Office_Supplies\"],\"Sales_Channel\":[\"Offline\"],\"Order_Priority\":[\"Medium\"],\"Country\":[\"Fiji\"]}",
 
 	"aggregateBy" : "{\"max\":[\"Units_Sold\"],\"min\":[\"Units_Sold\"],\"avg\":[\"Order_Processing_Time\",\"Gross_Margin\",\"Units_Sold\"],\"sum\":[\"Units_Sold\",\"Total_Revenue\",\"Total_Profit\"]}",
-	"tablename" : "mytable_500000"
+	"tablename" : "mytable_100"
     
     
 	}

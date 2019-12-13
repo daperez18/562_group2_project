@@ -7,7 +7,7 @@
 
     "runs": 1,
     "threads": 1,
-    "iterations": 10,
+    "iterations": 6,
     "sleepTime": 5,
     "randomSeed": 42,
 
@@ -27,9 +27,9 @@
     "invalidators": {},
     "removeDuplicateContainers": false,
 
-    "openCSV": true,
+    "openCSV": false,
     "combineSheets": true,
-    "warmupBuffer": 0
+    "warmupBuffer": 1
 } 
 
 

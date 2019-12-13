@@ -133,6 +133,8 @@ public class ServiceThree implements RequestHandler<Request, HashMap<String, Obj
         return fullQuery;
     }
 
+   
+
     public String convertRsToJSON(ResultSet rs) {
         JSONArray json = new JSONArray();
         try { 
@@ -200,15 +202,23 @@ public class ServiceThree implements RequestHandler<Request, HashMap<String, Obj
 
             PreparedStatement ps = con.prepareStatement(fullQuery);
             ResultSet rs = ps.executeQuery();
-         
             String queryResults = convertRsToJSON(rs);
 
             AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();  
 
             s3Client.putObject(bucketname, "QueryResults.txt", queryResults);
 
-               
+            int iteration = 100;
+            for (int i = 0; i < iteration; i++) {
+                String testQuery = "SELECT * from " + mytable + ";";
+                ps =  con.prepareStatement(fullQuery);
+
+                ps.executeQuery();
+            }
+
+	    con.close();
         }
+
         catch (Exception e) 
         {
             logger.log("Got an exception working with MySQL! ");

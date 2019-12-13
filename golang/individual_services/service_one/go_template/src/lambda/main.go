@@ -85,9 +85,14 @@ func HandleRequest(ctx context.Context, request saaf.Request) (map[string]interf
 }
 
 func editRecords(records [][]string) [][]string {
-	records[0] = append(records[0], "Order Processing Time", "Gross Margin")
+	// records := [][]string{}
+	// k := copy(records, r)
+	// fmt.Printf("K = %d with len(records) = %d\n", k, len(records))
+	editedRecords := [][]string{}
+	editedRecords = append(editedRecords, append(records[0], "Order Processing Time", "Gross Margin"))
 
 	seenRecords := map[string]bool{}
+	duplicates := 0
 
 	for i, record := range records {
 		if i == 0 {
@@ -98,6 +103,7 @@ func editRecords(records [][]string) [][]string {
 		if _, exists := seenRecords[id]; !exists {
 			seenRecords[id] = true
 		} else {
+			duplicates++
 			continue
 		}
 
@@ -131,8 +137,11 @@ func editRecords(records [][]string) [][]string {
 
 		grossMargin := thing / thing2
 
-		records[i] = append(record, strconv.Itoa(orderTime), strconv.FormatFloat(grossMargin, 'f', 2, 64))
+		editedRecords = append(editedRecords, append(record, strconv.Itoa(orderTime), strconv.FormatFloat(grossMargin, 'f', 2, 64)))
+		// editedRecords[i-duplicates] = []string{}
+		// editedRecords[i-duplicates] = append(record, strconv.Itoa(orderTime), strconv.FormatFloat(grossMargin, 'f', 2, 64))
 	}
+	fmt.Printf("# of duplicates %d and len(records)=%d", duplicates, len(editedRecords))
 
-	return records
+	return editedRecords
 }

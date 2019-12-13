@@ -21,7 +21,7 @@ var dbinfo = struct {
 	username string
 }{
 	password: "tcss562group2",
-	dbname:   "tcp(service2rds.cluster-cwunkmk4eqtz.us-east-2.rds.amazonaws.com:3306)/service2db",
+	dbname:   "tcp(service2rds.cluster-cwunkmk4eqtz.us-east-2.rds.amazonaws.com:3306)/service2db?multiStatements=true&interpolateParams=true",
 	username: "tcss562",
 }
 
@@ -74,7 +74,7 @@ func HandleRequest(ctx context.Context, request saaf.Request) (map[string]interf
 }
 
 func writeRecords(records [][]string, tablename string) error {
-	batchSize := 10000 // has to be less than 16000 or something
+	batchSize := 1000 // has to be less than 16000 or something
 
 	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@%s", dbinfo.username, dbinfo.password, dbinfo.dbname))
 	if err != nil {
@@ -109,55 +109,147 @@ func writeRecords(records [][]string, tablename string) error {
 	}
 
 	// add the rows to the table in batches
-	tx, err := db.Begin()
-	if err != nil {
-		return err
-	}
-	rowBuilder := &strings.Builder{}
+	// tx, err := db.Begin()
+	// if err != nil {
+	// 	return err
+	// }
+	// rowBuilder := &strings.Builder{}
+
+	// insertString := "insert into " + tablename + " (Region, Country, `Item Type`, `Sales Channel`, `Order Priority`, `Order Date`, `Order ID`, `Ship Date`, `Units Sold`, `Unit Price`, `Unit Cost`, `Total Revenue`, `Total Cost`, `Total Profit`, `Order Processing Time`, `Gross Margin`) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,? ,?)"
+	insertString := "insert into " + tablename + " (Region, Country, `Item Type`, `Sales Channel`, `Order Priority`, `Order Date`, `Order ID`, `Ship Date`, `Units Sold`, `Unit Price`, `Unit Cost`, `Total Revenue`, `Total Cost`, `Total Profit`, `Order Processing Time`, `Gross Margin`) values "
+	// ps, err := db.Prepare(insertString)
+	// if err != nil {
+	// 	return err
+	// }
+	vals := []interface{}{}
 
 	for i, record := range records {
 		if i == 0 {
 			continue
 		}
 
+		if i > 747900 {
+			fmt.Printf("Bad record #%d? = %#v", i, record)
+		}
+
 		if i%batchSize == 0 {
-			err = tx.Commit()
+			// err = tx.Commit()
+			// if err != nil {
+			// 	return err
+			// }
+
+			// tx, err = db.Begin()
+			// if err != nil {
+			// 	return err
+			// }
+
+			// ps, err = db.Prepare(insertString)
+			// if err != nil {
+			// 	return err
+			// }
+
+			insertString = strings.TrimSuffix(insertString, ",")
+
+			ps, err := db.Prepare(insertString)
 			if err != nil {
+				fmt.Println("Prepare error " + err.Error())
 				return err
 			}
 
-			tx, err = db.Begin()
+			_, err = ps.Exec(vals...)
 			if err != nil {
+				fmt.Println("Exec error" + err.Error())
 				return err
 			}
-		}
+			ps.Close()
 
-		for _, field := range record {
-			rowBuilder.WriteRune('"')
-			rowBuilder.WriteString(field)
-			rowBuilder.WriteRune('"')
-			rowBuilder.WriteRune(',')
-		}
-		valuesString := strings.TrimSuffix(rowBuilder.String(), ",")
+			insertString = "insert into " + tablename + " (Region, Country, `Item Type`, `Sales Channel`, `Order Priority`, `Order Date`, `Order ID`, `Ship Date`, `Units Sold`, `Unit Price`, `Unit Cost`, `Total Revenue`, `Total Cost`, `Total Profit`, `Order Processing Time`, `Gross Margin`) values "
+			fmt.Printf("before reset len(vals) = %d at iteration %d\n", len(vals), i)
+			vals = []interface{}{}
+			fmt.Printf("after reset len(vals) = %d at iteration %d\n", len(vals), i)
 
-		stmt, err := tx.Prepare("insert into " + tablename + " values(" + valuesString + ");")
-		if err != nil {
-			return err
 		}
+		insertString += "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,? ,?),"
 
-		_, err = stmt.Exec()
-		if err != nil {
-			return err
-		}
+		vals = append(vals,
+			record[0],
+			record[1],
+			record[2],
+			record[3],
+			record[4],
+			record[5],
+			record[6],
+			record[7],
+			record[8],
+			record[9],
+			record[10],
+			record[11],
+			record[12],
+			record[13],
+			record[14],
+			record[15])
 
-		rowBuilder.Reset()
+		// _, err = ps.Exec(
+		// 	record[0],
+		// 	record[1],
+		// 	record[2],
+		// 	record[3],
+		// 	record[4],
+		// 	record[5],
+		// 	record[6],
+		// 	record[7],
+		// 	record[8],
+		// 	record[9],
+		// 	record[10],
+		// 	record[11],
+		// 	record[12],
+		// 	record[13],
+		// 	record[14],
+		// 	record[15],
+		// )
+		// if err != nil {
+		// 	return err
+		// }
+
+		// for _, field := range record {
+		// 	rowBuilder.WriteRune('"')
+		// 	rowBuilder.WriteString(field)
+		// 	rowBuilder.WriteRune('"')
+		// 	rowBuilder.WriteRune(',')
+		// }
+		// valuesString := strings.TrimSuffix(rowBuilder.String(), ",")
+
+		// stmt, err := tx.Prepare("insert into " + tablename + " values(" + valuesString + ");")
+		// if err != nil {
+		// 	return err
+		// }
+
+		// _, err = stmt.Exec()
+		// if err != nil {
+		// 	return err
+		// }
+
+		// rowBuilder.Reset()
 	}
+	insertString = strings.TrimSuffix(insertString, ",")
+	fmt.Println("After loop. insert string  = " + insertString)
 
-	err = tx.Commit()
+	ps, err := db.Prepare(insertString)
 	if err != nil {
-		fmt.Println("Post loop commit error")
 		return err
 	}
+	defer ps.Close()
+
+	_, err = ps.Exec(vals...)
+	if err != nil {
+		return err
+	}
+
+	// err = tx.Commit()
+	// if err != nil {
+	// 	fmt.Println("Post loop commit error")
+	// 	return err
+	// }
 
 	return nil
 
