@@ -103,7 +103,6 @@ def contstruct_query_string(filterBy, aggregateBy, tablename):
     k = fil.rfind(" UNION ")
     result = fil[:k]
     result += ";"   
-    print(result)
     return result
 
 def exexute_query(query_string):
@@ -123,10 +122,6 @@ def exexute_query(query_string):
         cursor.execute(query_string)
 
         rows = cursor.fetchall()
-
-        for i in range(100):
-            cursor.execute("SELECT * FROM mytable")
-        
 
 
     except Exception as ex:
