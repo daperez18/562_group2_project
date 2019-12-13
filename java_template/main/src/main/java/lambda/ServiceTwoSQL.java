@@ -57,20 +57,23 @@ public class ServiceTwoSQL implements RequestHandler<Request, HashMap<String, Ob
    
     public List<String[]> readcsv(InputStream input) {
         List<String[]> records = new ArrayList<String[]>();
+        CSVReader csvReader = null;
         try {
-            CSVReader csvReader = new CSVReader(new InputStreamReader(input));
+            csvReader = new CSVReader(new InputStreamReader(input));
+            csvReader.readNext();
             records = csvReader.readAll();
+
         } catch (Exception e) {
             System.out.println("error");
         }
-        
         return records;
     }
 
 
 
 
-    public void write_csv(List<String[]> info, String url,String username,String password, String mytable, LambdaLogger logger) {
+
+    public void write_csv(List<String[]> QueryList, String url,String username,String password, String mytable, LambdaLogger logger) {
         try 
         { 
             logger.log("checkcon: " + url + ", " +username +", " + password  );
@@ -80,42 +83,57 @@ public class ServiceTwoSQL implements RequestHandler<Request, HashMap<String, Ob
             //String query = "Insert into mytable values(?,?,?,?, ?,?,?,?,?,?,?,?,?,?,?,?)";
             PreparedStatement ps = con.prepareStatement("DROP TABLE IF EXISTS `" + mytable + "`;");
             ps.execute();
-            ps = con.prepareStatement("CREATE TABLE "+ mytable + " (Region VARCHAR(40), Country VARCHAR(40), `Item Type` VARCHAR(40), `Sales Channel` VARCHAR(40),`Order Priority` VARCHAR(40), `Order Date` VARCHAR(40),`Order ID` INT PRIMARY KEY, `Ship Date` VARCHAR(40), `Units Sold` INT,`Unit Price` DOUBLE, `Unit Cost` DOUBLE, `Total Revenue` DOUBLE, `Total Cost` DOUBLE, `Total Profit` DOUBLE, `Order Processing Time` INT, `Gross Margin` FLOAT);");
+            ps = con.prepareStatement("CREATE TABLE "+ mytable + " (Region VARCHAR(40), Country VARCHAR(40), `Item Type` VARCHAR(40), `Sales Channel` VARCHAR(40),`Order Priority` VARCHAR(40), `Order Date` VARCHAR(40),`Order ID` INT PRIMARY KEY, `Ship Date` VARCHAR(40), `Units Sold` INT,`Unit Price` DOUBLE, `Unit Cost` DOUBLE, `Total Revenue` DOUBLE, `Total Cost` DOUBLE, `Total Profit` DOUBLE, `Order Processing Time` INT, `Gross Margin` FLOAT) ENGINE = MyISAM;");
             ps.execute();
 	    logger.log("before insertion");
-            for (int i =1; i <info.size(); i++) {
-                int col = info.get(i).length;
+            String mySql = "insert into "+ mytable +" (Region, Country, `Item Type`, `Sales Channel`, `Order Priority`, `Order Date`, `Order ID`, `Ship Date`, `Units Sold`, `Unit Price`, `Unit Cost`, `Total Revenue`, `Total Cost`, `Total Profit`, `Order Processing Time`, `Gross Margin`) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,? ,?)";
+            PreparedStatement statement = con.prepareStatement(mySql);
 
-                String currString ="";
-                for (int j = 0; j < col; j++) {
+            try {
+                int i = 0;
+                for (String[] query: QueryList) {
+                    statement.setString(1, query[0]);
+                    statement.setString(2, query[1]);
+                    statement.setString(3, query[2]);
+                    statement.setString(4, query[3]);
+                    statement.setString(5, query[4]);
+                    statement.setString(6, query[5]);
+                    statement.setString(7, query[6]);
+                    statement.setString(8, query[7]);
+                    statement.setString(9, query[8]);
+                    statement.setString(10, query[9]);
+                    statement.setString(11, query[10]);
+                    statement.setString(12, query[11]);
+                    statement.setString(13, query[12]);
+                    statement.setString(14, query[13]);
+                    statement.setString(15, query[14]);
+                    statement.setString(16, query[15]);
 
-                    currString += "\"" +(info.get(i)[j]) +"\"";
+                    statement.addBatch();
+                 
 
-                    if ((j+1)!=col)
-                        currString += ",";
-
+                    if (++i % 10000 == 0) {
+                        logger.log("finished: " + i);
+                        statement.executeBatch();
+                    }
                 }
-		
-		try {
-                	ps = con.prepareStatement("insert into " + mytable + " values("+ currString + ");");
-                	ps.execute();
-		} catch (Exception e) {
-			logger.log("thrown away insertion: " + i + " because error: " + e);
-		}
+                statement.executeBatch();
+                statement.close();
+                con.close();
 
-
+            } catch (Exception e) {
+                logger.log("Exection using csvreader: " + e);
             }
-	    logger.log("after insertion");
-            //ps = con.prepareStatement("ALTER TABLE " + mytable + " ORDER BY `Order Id`");
-            //ps.execute();
-            con.close();
-        }
+
+        } 
+
         catch (Exception e) 
         {
             logger.log("Got an exception working with MySQL! ");
             logger.log(e.getMessage());
         }
     }
+       
 
     // Lambda Function Handler
     public HashMap<String, Object> handleRequest(Request request, Context context) {

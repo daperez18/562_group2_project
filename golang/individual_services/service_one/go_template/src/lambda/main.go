@@ -87,8 +87,17 @@ func HandleRequest(ctx context.Context, request saaf.Request) (map[string]interf
 func editRecords(records [][]string) [][]string {
 	records[0] = append(records[0], "Order Processing Time", "Gross Margin")
 
+	seenRecords := map[string]bool{}
+
 	for i, record := range records {
 		if i == 0 {
+			continue
+		}
+
+		id := record[6]
+		if _, exists := seenRecords[id]; !exists {
+			seenRecords[id] = true
+		} else {
 			continue
 		}
 

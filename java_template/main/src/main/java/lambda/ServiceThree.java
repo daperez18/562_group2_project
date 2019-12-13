@@ -92,7 +92,7 @@ public class ServiceThree implements RequestHandler<Request, HashMap<String, Obj
             return newList;
     }
 
-    public LinkedList<String> createAggFunctionStrings(JSONObject JSONObj, LinkedList<String> filterBy) {
+    public LinkedList<String> createAggFunctionStrings(JSONObject JSONObj, String mytable, LinkedList<String> filterBy) {
             LinkedList<String> newList = new LinkedList<String>();
 
             for (int q = 0; q < filterBy.size(); q++ ) {
@@ -114,7 +114,7 @@ public class ServiceThree implements RequestHandler<Request, HashMap<String, Obj
                 }
                 aggString+=" \"" + filterByString.replace('"', ' ')  + "\" ";
                 aggString+="AS `Filtered By` ";
-                aggString+="FROM mytable ";
+                aggString+="FROM " + mytable + " ";
                 aggString+=filterByString +";";
                 newList.add(aggString);
             }
@@ -171,10 +171,11 @@ public class ServiceThree implements RequestHandler<Request, HashMap<String, Obj
         String bucketname = request.getBucketName();
         String key = request.getKey();
         Response r = new Response();
+        String mytable = request.getTableName();
         JSONObject filterByJSON = request.getFilterByAsJSONOBJ(); 
         JSONObject aggregateByJSON = request.getAggregateByAsJSONOBJ();
         LinkedList<String> whereStrings= createWhereString(filterByJSON);
-        LinkedList<String> queryStrings = createAggFunctionStrings(aggregateByJSON, whereStrings);
+        LinkedList<String> queryStrings = createAggFunctionStrings(aggregateByJSON, mytable, whereStrings);
         String fullQuery = Union_Queries(queryStrings);
 		
         logger.log(filterByJSON.toString());

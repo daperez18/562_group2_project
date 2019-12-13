@@ -2,7 +2,7 @@
     "callWithCLI": true,
     "memorySettings": [],
     "payloads": [
-        { "bucketname": "testbucketohiodap", "key": "562sales_small.csv" }
+        { "bucketname": "testbucketohiodap", "key": "562sales_1500000.csv" }
     ],
 
     "runs": 50,
@@ -29,7 +29,7 @@
     "invalidators": {},
     "removeDuplicateContainers": false,
 
-    "openCSV": true,
+    "openCSV": false,
     "combineSheets": true,
     "warmupBuffer": 1
 } 
