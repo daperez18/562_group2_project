@@ -68,8 +68,6 @@ public class ServiceTwoSQL implements RequestHandler<Request, HashMap<String, Ob
     }
 
 
-
-
     public void write_csv(List<String[]> info, String url,String username,String password, LambdaLogger logger) {
         try 
         { 

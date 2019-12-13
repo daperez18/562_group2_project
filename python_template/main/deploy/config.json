@@ -3,7 +3,7 @@
 
 	"functionName": "python-hello",
 	
-	"lambdaRoleARN": "arn:aws:iam::037262423719:role/role_lamba_full_access_everything",
+	"lambdaRoleARN": "arn:aws:iam::857205555574:role/service-role/simple_microservice_role",
 	"lambdaSubnets": "",
 	"lambdaSecurityGroups": "",
 
