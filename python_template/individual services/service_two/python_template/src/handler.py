@@ -35,7 +35,11 @@ def yourFunction(request, context):
     s3 = boto3.client('s3')
     csvfile = s3.get_object(Bucket=bucketname, Key=key)
     csvcontent = csvfile['Body'].read().split(b'\n')
-
+    i = 0
+    for line in csvcontent:
+        csvcontent[i] = line.decode("utf-8")
+        i = i+1
+    csv_data = csv.DictReader(csvcontent)
     test_val=""
     content = read_content(csvcontent)
     output = write_output(content)

@@ -149,8 +149,6 @@ def yourFunction(request, context):
 
     s3 = boto3.client('s3')
 
-    print(str(request['key']) + " " + str(request['bucketname']))
-
     csvfile = s3.get_object(Bucket=bucketname, Key=key)
     
     csvcontent = csvfile['Body'].read().decode('utf-8').split("\n")
