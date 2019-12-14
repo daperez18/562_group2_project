@@ -20,7 +20,14 @@ filenames_service1=["Service1-100.csv", "Service1-1000.csv", "Service1-5000.csv"
 filenames_service2=["Service2-100.csv", "Service2-1000.csv", "Service2-5000.csv", "Service2-10000.csv", "Service2-50000.csv", "Service2-100000.csv", "Service2-500000.csv", "Service2-1000000.csv", "Service2-1500000.csv"]
 filenames_service3=["Service3-100.csv", "Service3-1000.csv", "Service3-5000.csv", "Service3-10000.csv", "Service3-50000.csv", "Service3-100000.csv", "Service3-500000.csv", "Service3-1000000.csv", "Service3-1500000.csv"]
 
-metrics=[ "avg_runtime"]
+
+metrics=[ "avg_runtime", "avg_cpuIdleDelta", "avg_cpuIowaitDelta", "avg_cpuKrnDelta", "avg_cpuSoftIrqDelta", "avg_cpuUsrDelta", "avg_frameworkRuntime", "avg_latency", "avg_roundTripTime"]
+#metrics=["avg_vmuptime"]
+
+#avg_cpuIrqDelta
+
+
+#cpuUsr, cpuIdle, cpuKrn contextSwitches
 #	 "avg_contextSwitchesDelta"
 
 #def export_graphs_as_images(fig, file_name, title):
@@ -189,6 +196,9 @@ def get_combined_graph_metric(java_stats, python_stats, go_stats, java_titles, p
 def get_all_graphs_in_metrics(java_stats, python_stats, go_stats, java_titles, python_titles, go_titles, metrics, tempadd):
 	for metric in metrics:
 		newlist = get_combined_graph_metric(java_stats, python_stats, go_stats, java_titles, python_titles, go_titles, metric)
+		print ("java: {} ".format(java_titles))
+		print("python: {} ".format(python_titles))
+		print("go: {}".format(go_titles))
 		fig = go.Figure(data=[
 		    go.Scatter(name="java", x=labels, y=newlist[0]),
 		    go.Scatter(name="python", x=labels, y=newlist[1]),
