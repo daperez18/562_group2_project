@@ -12,9 +12,9 @@ import json
 import logging
 #import pandas as pd
 from Inspector import *
-import pymysql
-import pymysql.cursors
 import time
+import pymysql
+
 
 #
 # Define your FaaS F    unction here.
@@ -81,19 +81,15 @@ def write_output(content):
         cursor.execute("CREATE TABLE mytable(Region VARCHAR(50), Country VARCHAR(50), `Item Type` VARCHAR(50), `Sales Channel` VARCHAR(50), `Order Priority` VARCHAR(50),`Order Date` VARCHAR(50), `Order ID` int, `Ship Date` VARCHAR(50), `Units Sold` DOUBLE, `Unit Price` DOUBLE, `Unit Cost` DOUBLE, `Total Revenue` DOUBLE, `Total Cost` DOUBLE, `Total Profit` DOUBLE, `Order Processing Time` DOUBLE, `Gross Margin` DOUBLE )  ")
         for i in range(1, len(content)):
             col = len(content[i])
-            curr_string = ""
-            for j in range(col):
-                curr_string += "\"" + content[i][j] + "\""
-
-                if (j+1)!=col:
-                    curr_string += ","
+            curr_string = ",".join("\"" + content[i][j] + "\"" for j in range(col))
+            
         
             cursor.execute("INSERT INTO mytable VALUES("+ curr_string + ");")
-            cursor.close()
     
         cursor.execute("ALTER TABLE mytable ORDER BY `Order ID`") 
-        cursor.close()   
+        print(cursor.rowcount)
         con.commit()
+        cursor.close()
     except Exception as ex:
         print(ex.args)
     finally:
