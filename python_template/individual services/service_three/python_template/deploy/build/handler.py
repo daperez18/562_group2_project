@@ -58,8 +58,12 @@ def yourFunction(request, context):
     #s3.put_object(Bucket=bucketname, Key=dest_object_name,Body=(my_bytes))
 
     my_bytes = bytes(csv_result.getvalue())
+
+    key_split = str(request['key']).split('_')[0]
+
+    result_key = "{0}_results.csv".format(key_split)
     
-    s3.put_object(Bucket=bucketname, Key="results.csv",Body=(my_bytes))
+    s3.put_object(Bucket=bucketname, Key=result_key,Body=(my_bytes))
     
     #bytes = csv_result.getvalue()
 

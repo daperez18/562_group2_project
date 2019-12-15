@@ -5,9 +5,8 @@
         { "bucketname": "cvs.bucket.reh", "key": "50000_newdata.csv","tablename": "mytable"}
     ],
 
-    "runs": 50,
-    "threads": 50,
-    "iterations": 1,
+    "runs": 1,
+    "threads": 1,
     "sleepTime": 5,
     "randomSeed": 42,
 
@@ -29,7 +28,8 @@
 
     "openCSV": true,
     "combineSheets": true,
-    "warmupBuffer": 1
+    "warmupBuffer": 1,
+    "iterations":6
 } 
 
 

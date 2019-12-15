@@ -5,9 +5,10 @@
         { "bucketname": "cvs.bucket.reh", "key": "1500000_newdata.csv","tablename": "mytable"}
     ],
 
-    "runs": 50,
-    "threads": 50,
-    "iterations": 1,
+    "runs": 1,
+    "threads": 1,
+
+    "iterations":2,
     "sleepTime": 5,
     "randomSeed": 42,
 
