@@ -10,6 +10,6 @@
 	"test": {
 		"name": "Bob",
 		"bucketname": "cvs.bucket.reh",
-		"key": "100000_newdata.csv"
+		"key": "100_newdata.csv"
 	}
 }

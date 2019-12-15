@@ -7,6 +7,8 @@
 
     "runs": 1,
     "threads": 1,
+
+    "iterations":2,
     "sleepTime": 5,
     "randomSeed": 42,
 
@@ -28,8 +30,7 @@
 
     "openCSV": true,
     "combineSheets": true,
-    "warmupBuffer": 1,
-    "iterations":6
+    "warmupBuffer": 1
 } 
 
 

@@ -49,8 +49,6 @@ def yourFunction(request, context):
         inspector.addAttribute("bucketname", "bucketname " + str(request['bucketname']) + "!")
         inspector.addAttribute("key", str(request['key']))
         inspector.addAttribute("test val", csvcontent[0])
-
-
     
     inspector.inspectCPUDelta()
     return inspector.finish()
@@ -67,31 +65,44 @@ def read_content(content):
 
     return list
 
-def write_output(content):
+def write_output(content ):
     try:
         print("Connecting...")
-        con = pymysql.connect(host="tcss562group2.cluster-cj6rdxvm4ac3.us-east-2.rds.amazonaws.com", 
-        user="tscc562", password="m23j452345", db="562Group2DB", connect_timeout=900)
-        
-        print("connected to db")
-        cursor = con.cursor()
-        cursor.execute("DROP TABLE IF EXISTS mytable")
-        print("Removed mytable")
 
-        cursor.execute("CREATE TABLE mytable(Region VARCHAR(50), Country VARCHAR(50), `Item Type` VARCHAR(50), `Sales Channel` VARCHAR(50), `Order Priority` VARCHAR(50),`Order Date` VARCHAR(50), `Order ID` int, `Ship Date` VARCHAR(50), `Units Sold` DOUBLE, `Unit Price` DOUBLE, `Unit Cost` DOUBLE, `Total Revenue` DOUBLE, `Total Cost` DOUBLE, `Total Profit` DOUBLE, `Order Processing Time` DOUBLE, `Gross Margin` DOUBLE )  ")
-        for i in range(1, len(content)):
-            col = len(content[i])
-            curr_string = ",".join("\"" + content[i][j] + "\"" for j in range(col))
-            
+        con = pymysql.connect(host="tcss562group2.cluster-cj6rdxvm4ac3.us-east-2.rds.amazonaws.com", 
+        user="tscc562", password="m23j452345", db="562Group2DB", connect_timeout=350000)
         
-            cursor.execute("INSERT INTO mytable VALUES("+ curr_string + ");")
-    
-        cursor.execute("ALTER TABLE mytable ORDER BY `Order ID`") 
-        print(cursor.rowcount)
-        con.commit()
-        cursor.close()
+        print("Connected to db")
+
+        with con:
+            cursor = con.cursor()
+            cursor.execute("DROP TABLE IF EXISTS mytable")
+
+            print("Removed mytable")
+
+            insert_query=("INSERT INTO mytable (Region, Country, `Item Type` , `Sales Channel` , `Order Priority` ,`Order Date`,  `Order ID`, `Ship Date`, `Units Sold`, `Unit Price`, `Unit Cost`, `Total Revenue`, `Total Cost`, `Total Profit`, `Oder Processing Time`, `Gross Margin`) VALUES (%s, %s, %s, %s, %s,%s, %s, %s, %s, %s,%s, %s, %s, %s, %s, %s)")
+            
+            print("Connecting to DB")
+            
+            cursor.execute("CREATE TABLE mytable(Region VARCHAR(50), Country VARCHAR(50), `Item Type` VARCHAR(50), `Sales Channel` VARCHAR(50), `Order Priority` VARCHAR(50),`Order Date` VARCHAR(50), `Order ID` int, `Ship Date` VARCHAR(50), `Units Sold` DOUBLE, `Unit Price` DOUBLE, `Unit Cost` DOUBLE, `Total Revenue` DOUBLE, `Total Cost` DOUBLE, `Total Profit` DOUBLE, `Oder Processing Time` DOUBLE, `Gross Margin` DOUBLE )  ")
+
+            print("Connection is OPEN")
+            
+            my_data = []
+            for i in range(0, len(content) -1):
+                my_data.append((content[i][0], content[i][1], content[i][2], content[i][3], 
+                content[i][4], content[i][5], content[i][6], content[i][7], 
+                content[i][8], content[i][9], content[i][10], content[i][11], 
+                content[i][12], content[i][13], content[i][14], content[i][15]))
+            
+            cursor.executemany(insert_query, my_data)
+        
+            cursor.execute("ALTER TABLE mytable ORDER BY `Order ID`") 
+
+            con.commit()
+            cursor.close()
+            con.close()
     except Exception as ex:
         print(ex.args)
-    finally:
-        con.close()
+    
       
