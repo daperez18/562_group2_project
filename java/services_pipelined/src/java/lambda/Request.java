@@ -20,8 +20,8 @@ public class Request {
     JSONObject aggregateByJSON;
     String bucketname;
     String key;
-	String tablename;
-
+    String tablename;
+    int batchSize;
     public String getBucketName() {
         return this.bucketname;
     }
@@ -98,13 +98,24 @@ public class Request {
     public JSONObject getAggregateByAsJSONOBJ() {
         return this.aggregateByJSON; 
     }
+	
+	
+    public int getBatchSizee() {
+        return this.batchSize;
+    }
+	
+    public void setBatchSizee(int batchSize) {
+        this.batchSize = batchSize;
+    }
+	
 	//constructor
-    public Request(String filterBy, String aggregateBy, String key, String bucketname, String tablename) {
+    public Request(String filterBy, String aggregateBy, String key, String bucketname, String tablename, int batchSize) {
         this.setFilterBy(filterBy);
         this.setAggregateBy(aggregateBy);
         this.setBucketname(bucketname);
         this.setKey(key);
-		this.setTablename(tablename);
+	this.setTablename(tablename);
+    	this.setBatchSize(batchSize);
     }
 
 
