@@ -84,7 +84,7 @@ public class ServiceTwoSQL implements RequestHandler<Request, HashMap<String, Ob
     * @Param mytable is the table in the database where rows of information will be created
     * @Param logger is a LambdaLogger to log information to cloudwatch.
     */
-    public void write_csv(List<String[]> Records, String url,String username,String password, String mytable, LambdaLogger logger) {
+    public void write_csv(List<String[]> Records, String url,String username,String password, String mytable, int batchSize, LambdaLogger logger) {
         try 
         { 
             logger.log("checkcon: " + url + ", " +username +", " + password  );
@@ -117,7 +117,7 @@ public class ServiceTwoSQL implements RequestHandler<Request, HashMap<String, Ob
                     statement.setString(15, record[14]);
                     statement.setString(16, record[15]);
                     statement.addBatch();
-                    if (++i % 10000 == 0) {
+                    if (++i % batchSize == 0) {
                         logger.log("finished: " + i);
                         statement.executeBatch();
                     }
@@ -156,6 +156,7 @@ public class ServiceTwoSQL implements RequestHandler<Request, HashMap<String, Ob
         String bucketname = request.getBucketName();
         String key = request.getKey();
 	String mytable=request.getTableName();
+	int batchSize = request.getBatchSize();
 	logger.log(mytable);
         logger.log(bucketname);
         logger.log(key);
@@ -173,7 +174,7 @@ public class ServiceTwoSQL implements RequestHandler<Request, HashMap<String, Ob
             String password = properties.getProperty("password");
             String driver = properties.getProperty("driver");
             List<String[]> records = readcsv(objectData);
-            write_csv(records, url, username, password, mytable, logger);
+            write_csv(records, url, username, password, mytable, batchSize, logger);
          
         } 
         catch (Exception e) 
