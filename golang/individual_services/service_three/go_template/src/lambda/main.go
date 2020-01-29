@@ -142,10 +142,10 @@ func doQuery(queryString, tablename string) ([][]string, error) {
 	}
 	defer db.Close()
 
-	err = db.Ping()
-	if err != nil {
-		return nil, err
-	}
+	// err = db.Ping()
+	// if err != nil {
+	// 	return nil, err
+	// }
 	// fmt.Println("Connection established")
 
 	rows, err := db.Query(queryString)

@@ -53,7 +53,7 @@ public class ServiceOne implements RequestHandler<Request, HashMap<String, Objec
     *@Param input is an InputStream holding information from a CSV file.
     */
     public CSVReader readcsv(InputStream input) {
-        List<String[]> records = new ArrayList<String[]>();
+        // List<String[]> records = new ArrayList<String[]>();
         CSVReader csvReader = null;
         try {
             csvReader = new CSVReader(new InputStreamReader(input));
@@ -70,28 +70,27 @@ public class ServiceOne implements RequestHandler<Request, HashMap<String, Objec
     * @Param Reader is a CSVReader used to process information from a csv file.
     * @Param logger is a LambdaLogger to log information to cloudwatch.
     */
-    public StringBuilder write_csv(CSVReader reader, LambdaLogger logger) {
+    public StringBuilder write_csv(CSVReader reader) {
 
 	String[] entries = null;
 	StringBuilder sb = new StringBuilder();
         try {
             entries = reader.readNext();
-            ArrayList loaded_entries = new ArrayList(Arrays.asList(entries));
+            ArrayList<String> loaded_entries = new ArrayList(Arrays.asList(entries));
             sb.append(String.join(",", loaded_entries) +",Order Processing Time, Gross Margin\n");
-            int i = 0;
+            //int i = 0;
             Set<Integer> unique_ids = new HashSet<Integer>();        
 
             while ((entries = reader.readNext()) !=null) {
      
                 loaded_entries = new ArrayList(Arrays.asList(entries));
-                if (unique_ids.contains(Integer.parseInt((String)loaded_entries.get(6)))) {
+                if (unique_ids.contains(Integer.parseInt(loaded_entries.get(6)))) {
                     continue;
                 } else {
 
                     String val = (String)loaded_entries.get(4);
                     if (val.equals("C")) {
                         loaded_entries.set(4, "Critical");
-
                     }
                     else if (val.equals("L")){
                         loaded_entries.set(4, "Low");
@@ -104,8 +103,8 @@ public class ServiceOne implements RequestHandler<Request, HashMap<String, Objec
                     }
 
 
-                    String[] date1_values=((String)loaded_entries.get(5)).split("/");
-                    String[] date2_values=((String)loaded_entries.get(7)).split("/");
+                    String[] date1_values=(loaded_entries.get(5)).split("/");
+                    String[] date2_values=(loaded_entries.get(7)).split("/");
                     int month = Integer.parseInt(date1_values[0]);
                     int day = Integer.parseInt(date1_values[1]);
                     int year = Integer.parseInt(date1_values[2]);
@@ -115,16 +114,17 @@ public class ServiceOne implements RequestHandler<Request, HashMap<String, Objec
                     int year2 = Integer.parseInt(date2_values[2]);
 
                     int order_time= ((year2 - year) * 365) + ((month2 - month) * 30) + (day2 - day);
-                    float gross_margin = Float.parseFloat(((String)loaded_entries.get(13))) / Float.parseFloat(((String)loaded_entries.get(11))); 
+                    
+                    float gross_margin = Float.parseFloat((loaded_entries.get(13))) / Float.parseFloat((loaded_entries.get(11))); 
                     loaded_entries.add(Integer.toString(order_time));
                     loaded_entries.add(String.valueOf(gross_margin));
 
-                    if (i %1000 == 0) {
-                        logger.log("added records " + i);
-                    }
-                    i +=1;
+                    //if (i %1000 == 0) {
+                        //logger.log("added records " + i);
+                    //}
+                    //i +=1;
                     sb.append(String.join(",", loaded_entries) +"\n");
-                    unique_ids.add(Integer.parseInt((String)loaded_entries.get(6)));
+                    unique_ids.add(Integer.parseInt(loaded_entries.get(6)));
                 }
             }
 
@@ -148,7 +148,7 @@ public class ServiceOne implements RequestHandler<Request, HashMap<String, Objec
         //Collect inital data.
         Inspector inspector = new Inspector();
         inspector.inspectAll();
-        LambdaLogger logger = context.getLogger();
+        //LambdaLogger logger = context.getLogger();
         
         //****************START FUNCTION IMPLEMENTATION*************************
         //Add custom key/value attribute to SAAF's output. (OPTIONAL)
@@ -165,11 +165,11 @@ public class ServiceOne implements RequestHandler<Request, HashMap<String, Objec
 
         InputStream objectData = s3Object.getObjectContent();
         //scanning data line by line
-        logger.log("reading csv into records start");
+        //logger.log("reading csv into records start");
         CSVReader records = readcsv(objectData);
-        logger.log("finished reading records");
-        StringBuilder sw = write_csv(records, logger);
-        logger.log("finished writing records");        
+        //logger.log("finished reading records");
+        StringBuilder sw = write_csv(records);
+        //logger.log("finished writing records");        
 
         byte[] bytes = sw.toString().getBytes(StandardCharsets.UTF_8);
         InputStream is = new ByteArrayInputStream(bytes);
@@ -177,19 +177,20 @@ public class ServiceOne implements RequestHandler<Request, HashMap<String, Objec
         meta.setContentLength(bytes.length);
         meta.setContentType("text/plain");
 
-	Date date= new Date();
-	long time = date.getTime();
-	Timestamp ts = new Timestamp(time);
-
+        //Date date = new Date();
+        //long time = date.getTime();
+        //Timestamp ts = new Timestamp(time);
 	
-        AmazonS3 s3Client2 = AmazonS3ClientBuilder.standard().build();
-	logger.log(key.substring(0, key.lastIndexOf('.')) +"_"+  System.currentTimeMillis() +"_" + inspector.getAttribute("uuid") + ".csv");
-        s3Client2.putObject(bucketname, key.substring(0, key.lastIndexOf('.')) +"/"+  System.currentTimeMillis() +"_" + inspector.getAttribute("uuid") + ".csv", is, meta);
-        Response response = new Response();
+        //AmazonS3 s3Client2 = AmazonS3ClientBuilder.standard().build();
+	    //logger.log(key.substring(0, key.lastIndexOf('.')) +"_"+  System.currentTimeMillis() +"_" + inspector.getAttribute("uuid") + ".csv");
+        s3Client.putObject(bucketname, key.substring(0, key.lastIndexOf('.')) +"/"+  System.currentTimeMillis() +"_" + inspector.getAttribute("uuid") + ".csv", is, meta);
+        
+        //Response response = new Response();
+        //response.setValue("Bucket: " + bucketname + " key:" + key + " processed. record 0 = ");
+        //inspector.consumeResponse(response);
 
-        response.setValue("Bucket: " + bucketname + " key:" + key + " processed. record 0 = ");
-
-        inspector.consumeResponse(response);
+        //Just add the value directly instead of having to create the response object.
+        inspector.addAttribute("value", "Bucket: " + bucketname + " key:" + key + " processed. record 0 = ");
         
         //****************END FUNCTION IMPLEMENTATION***************************
         //Collect final information such as total runtime and cpu deltas.

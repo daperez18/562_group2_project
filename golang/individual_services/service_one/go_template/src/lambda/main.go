@@ -138,8 +138,6 @@ func editRecords(records [][]string) [][]string {
 		grossMargin := thing / thing2
 
 		editedRecords = append(editedRecords, append(record, strconv.Itoa(orderTime), strconv.FormatFloat(grossMargin, 'f', 2, 64)))
-		// editedRecords[i-duplicates] = []string{}
-		// editedRecords[i-duplicates] = append(record, strconv.Itoa(orderTime), strconv.FormatFloat(grossMargin, 'f', 2, 64))
 	}
 	fmt.Printf("# of duplicates %d and len(records)=%d", duplicates, len(editedRecords))
 
