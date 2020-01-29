@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export AWS_PROFILE=school
+
 # Mutli-platform Publisher. Used to publish FaaS Inspector Go functions onto AWS Lambda
 #
 # Each platform's default function is defined in the platforms folder. These are copied into the source folder

@@ -9,9 +9,19 @@ import (
 	"time"
 )
 
+// DONT USE RUN COMMAND, just read the file (ok in Java but other languages is terrible)
+// or use whatevr you can to get 'uname -v' (low priority)
+// no bean stuff (only java uses)
+// inspectContainer is very important because it allows us to see if its a reused container
+// inspectPlatform is next
+// inspectMemory is ok
+// inspectLinux is last
+// Add check if previously inspected and if so, return
 type Inspector struct {
-	startTime  int64
-	attributes map[string]interface{}
+	startTime time.Time
+
+	attributes        map[string]interface{}
+	privateAttributes map[string]interface{}
 
 	inspectedCPU       bool
 	inspectedMemory    bool
@@ -20,14 +30,16 @@ type Inspector struct {
 	inspectedLinux     bool
 }
 
-func New() Inspector {
+func NewInspector() Inspector {
 	inspector := Inspector{}
 
-	inspector.startTime = time.Now().Unix()
+	inspector.startTime = time.Now()
 	inspector.attributes = make(map[string]interface{})
 
 	inspector.attributes["version"] = 0.4
 	inspector.attributes["lang"] = "go"
+
+	inspector.privateAttributes = make(map[string]interface{})
 
 	return inspector
 }
@@ -50,22 +62,27 @@ func (inspector *Inspector) InspectAll() {
 }
 
 func (inspector *Inspector) InspectContainer() {
+	// Add check if previously inspected and if so, return
 	// TODO
 }
 
 func (inspector *Inspector) InspectPlatform() {
+	// Add check if previously inspected and if so, return
 	// TODO
 }
 
 func (inspector *Inspector) InspectLinux() {
+	// Add check if previously inspected and if so, return
 	// TODO
 }
 
 func (inspector *Inspector) InspectMemory() {
+	// Add check if previously inspected and if so, return
 	// TODO
 }
 
 func (inspector *Inspector) InspectCPU() {
+	// Add check if previously inspected and if so, return
 	inspector.inspectedCPU = true
 
 	cpuInfoMap, err := parseCPUInfoFile()
@@ -75,17 +92,17 @@ func (inspector *Inspector) InspectCPU() {
 
 	//Get CPU Type
 	if modelName, exists := cpuInfoMap["model name"]; exists {
-		inspector.AddAttribute("cpuType", modelName)
+		inspector.attributes["cpuType"] = modelName
 	}
 
 	//Get CPU Model
 	if cpuModel, exists := cpuInfoMap["model"]; exists {
-		inspector.AddAttribute("cpuModel", cpuModel)
+		inspector.attributes["cpuModel"] = cpuModel
 	}
 
 	//Get CPU Core Count
 	if cpuCores, exists := cpuInfoMap["cpu cores"]; exists {
-		inspector.AddAttribute("cpuCores", cpuCores)
+		inspector.attributes["cpuCores"] = cpuCores
 	}
 
 	// readStatFile
@@ -97,10 +114,12 @@ func (inspector *Inspector) InspectCPU() {
 	params := strings.Split(statMap["cpu"], " ")
 	metricNames := []string{"cpuUsr", "cpuNice", "cpuKrn", "cpuIdle", "cpuIowait", "cpuIrq", "cpuSoftIrq", "vmcpusteal"}
 	for i, val := range metricNames {
-		inspector.AddAttribute(val, params[i])
+		// inspector.AddAttribute(val, params[i])
+		inspector.privateAttributes[val] = params[i]
 	}
 
-	inspector.AddAttribute("contextSwitches", statMap["ctxt"])
+	// inspector.AddAttribute("contextSwitches", statMap["ctxt"])
+	inspector.privateAttributes["contextSwitches"] = statMap["ctxt"]
 }
 
 func parseCPUInfoFile() (map[string]string, error) {
@@ -149,9 +168,7 @@ func parseStatFile() (map[string]string, error) {
 
 func (inspector *Inspector) InspectAllDeltas() {
 	if val, ok := inspector.attributes["frameworkRuntime"]; ok {
-		currentTime := time.Now().Unix()
-		codeRuntime := (currentTime - inspector.startTime) - val.(int64)
-		inspector.attributes["userRuntime"] = codeRuntime
+		inspector.attributes["userRuntime"] = time.Since(inspector.startTime).Milliseconds() - val.(int64)
 	}
 
 	inspector.InspectCPUDelta()
@@ -159,6 +176,7 @@ func (inspector *Inspector) InspectAllDeltas() {
 }
 
 func (inspector *Inspector) InspectCPUDelta() {
+	// Add check that value had previously been gotten to all inspect*deltas
 	statMap, err := parseStatFile()
 	if err != nil {
 		return
@@ -168,28 +186,25 @@ func (inspector *Inspector) InspectCPUDelta() {
 	metricNames := []string{"cpuUsr", "cpuNice", "cpuKrn", "cpuIdle", "cpuIowait", "cpuIrq", "cpuSoftIrq", "vmcpusteal"}
 	for i, val := range metricNames {
 		currentValue, _ := strconv.Atoi(params[i])
-		oldValue, _ := strconv.Atoi(inspector.GetAttribute(val).(string))
-		inspector.AddAttribute(val+"Delta", currentValue-oldValue)
+		oldValue, _ := strconv.Atoi(inspector.privateAttributes[val].(string))
+		inspector.attributes[val+"Delta"] = currentValue - oldValue
 	}
 
 	currentContextSwitchesValue, _ := strconv.Atoi(statMap["ctxt"])
-	oldContextSwitches, _ := strconv.Atoi(inspector.GetAttribute("contextSwitches").(string))
-	inspector.AddAttribute("contextSwitchesDelta", currentContextSwitchesValue-oldContextSwitches)
+	oldContextSwitches, _ := strconv.Atoi(inspector.privateAttributes["contextSwitches"].(string))
+	inspector.attributes["contextSwitchesDelta"] = currentContextSwitchesValue - oldContextSwitches
 }
 
 func (inspector *Inspector) InspectMemoryDelta() {
 	// TODO
 }
 
+// can we add another timestamp method that takes a timestamp and adds a timestamp in relation to one that is passed
 func (inspector *Inspector) AddTimeStamp(key string) {
-	currentTime := time.Now().Unix()
-	runtime := (currentTime - inspector.startTime)
-	inspector.attributes[key] = runtime
+	inspector.attributes[key] = time.Since(inspector.startTime).Milliseconds()
 }
 
 func (inspector *Inspector) Finish() map[string]interface{} {
-	endTime := time.Now().Unix()
-	runtime := (endTime - inspector.startTime)
-	inspector.attributes["runtime"] = runtime
+	inspector.attributes["runtime"] = time.Since(inspector.startTime).Milliseconds()
 	return inspector.attributes
 }
