@@ -14,7 +14,7 @@ func main() {
 
 func HandleRequest(ctx context.Context, request map[string]interface{}) (map[string]interface{}, error) {
 
-	inspector := inspector.New()
+	inspector := inspector.NewInspector()
 	inspector.InspectAll()
 
 	//****************START FUNCTION IMPLEMENTATION*************************
