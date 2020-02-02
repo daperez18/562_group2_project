@@ -40,6 +40,7 @@ func HandleRequest(ctx context.Context, request saaf.Request) (map[string]interf
 	bucketname := request.BucketName
 	key := request.Key
 	tablename := request.TableName
+	batchSize := request.BatchSize
 
 	mySession, err := session.NewSession()
 	if err != nil {
@@ -61,7 +62,7 @@ func HandleRequest(ctx context.Context, request saaf.Request) (map[string]interf
 		return nil, err
 	}
 
-	err = writeRecords(records, tablename)
+	err = writeRecords(records, tablename, batchSize)
 	if err != nil {
 		return nil, err
 	}
@@ -73,22 +74,13 @@ func HandleRequest(ctx context.Context, request saaf.Request) (map[string]interf
 	return inspector.Finish(), nil
 }
 
-func writeRecords(records [][]string, tablename string) error {
-	batchSize := 1000 // has to be less than 16000 or something
-
+func writeRecords(records [][]string, tablename string, batchSize int) error {
 	db, err := sql.Open("mysql", fmt.Sprintf("%s:%s@%s", dbinfo.username, dbinfo.password, dbinfo.dbname))
 	if err != nil {
 		return err
 	}
 	defer db.Close()
 
-	// err = db.Ping()
-	// if err != nil {
-	// 	return err
-	// }
-	// fmt.Println("Connection established")
-
-	// Drop the table
 	stmt, err := db.Prepare("DROP TABLE IF EXISTS `" + tablename + "`;")
 	if err != nil {
 		return err
@@ -98,7 +90,6 @@ func writeRecords(records [][]string, tablename string) error {
 		return err
 	}
 
-	// Create the table
 	stmt, err = db.Prepare("CREATE TABLE " + tablename + " (Region VARCHAR(40), Country VARCHAR(40), `Item Type` VARCHAR(40), `Sales Channel` VARCHAR(40),`Order Priority` VARCHAR(40), `Order Date` VARCHAR(40),`Order ID` INT PRIMARY KEY, `Ship Date` VARCHAR(40), `Units Sold` INT,`Unit Price` DOUBLE, `Unit Cost` DOUBLE, `Total Revenue` DOUBLE, `Total Cost` DOUBLE, `Total Profit` DOUBLE, `Order Processing Time` INT, `Gross Margin` FLOAT);")
 	if err != nil {
 		return err
@@ -117,10 +108,6 @@ func writeRecords(records [][]string, tablename string) error {
 			continue
 		}
 
-		// if i > 747900 {
-		// 	fmt.Printf("Bad record #%d? = %#v", i, record)
-		// }
-
 		if i%batchSize == 0 {
 			insertString = strings.TrimSuffix(insertString, ",")
 
@@ -138,9 +125,7 @@ func writeRecords(records [][]string, tablename string) error {
 			ps.Close()
 
 			insertString = "insert into " + tablename + " (Region, Country, `Item Type`, `Sales Channel`, `Order Priority`, `Order Date`, `Order ID`, `Ship Date`, `Units Sold`, `Unit Price`, `Unit Cost`, `Total Revenue`, `Total Cost`, `Total Profit`, `Order Processing Time`, `Gross Margin`) values "
-			fmt.Printf("before reset len(vals) = %d at iteration %d\n", len(vals), i)
 			vals = []interface{}{}
-			fmt.Printf("after reset len(vals) = %d at iteration %d\n", len(vals), i)
 
 		}
 		insertString += "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,? ,?),"
@@ -164,7 +149,6 @@ func writeRecords(records [][]string, tablename string) error {
 			record[15])
 	}
 	insertString = strings.TrimSuffix(insertString, ",")
-	fmt.Println("After loop. insert string  = " + insertString)
 
 	ps, err := db.Prepare(insertString)
 	if err != nil {
