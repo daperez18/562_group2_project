@@ -174,7 +174,7 @@ public class ServiceThree implements RequestHandler<Request, HashMap<String, Obj
         //Create and populate a separate response object for function output. (OPTIONAL)
         String bucketname = request.getBucketName();
         String key = request.getKey();
-        Response r = new Response();
+        //Response r = new Response();
         String mytable = request.getTableName();
         JSONObject filterByJSON = request.getFilterByAsJSONOBJ(); 
         JSONObject aggregateByJSON = request.getAggregateByAsJSONOBJ();
@@ -202,13 +202,14 @@ public class ServiceThree implements RequestHandler<Request, HashMap<String, Obj
             String queryResults = convertRsToJSON(rs);
             AmazonS3 s3Client = AmazonS3ClientBuilder.standard().build();  
             s3Client.putObject(bucketname, "QueryResults.txt", queryResults);
-            int iteration = 100;
-            for (int i = 0; i < iteration; i++) {
-                String testQuery = "SELECT * from " + mytable + ";";
-                ps =  con.prepareStatement(fullQuery);
-                ps.executeQuery();
-            }
-	    con.close();
+
+            //int iteration = 100;
+            //for (int i = 0; i < iteration; i++) {
+            //    String testQuery = "SELECT * from " + mytable + ";";
+            //    ps =  con.prepareStatement(fullQuery);
+            //    ps.executeQuery();
+            //}
+	        con.close();
         }
         catch (Exception e) 
         {
@@ -216,9 +217,12 @@ public class ServiceThree implements RequestHandler<Request, HashMap<String, Obj
             logger.log(e.getMessage());
         }
         // Set return result in Response class, class is marshalled into JSON
-        r.setValue("Finished with querying database");
+        //r.setValue("Finished with querying database");
+
+        inspector.addAttribute("value", "Finished with querying database");
+
         //****************END FUNCTION IMPLEMENTATION***************************
-        inspector.consumeResponse(r);
+        //inspector.consumeResponse(r);
         //Collect final information such as total runtime and cpu deltas.
         inspector.inspectAllDeltas();
         return inspector.finish();

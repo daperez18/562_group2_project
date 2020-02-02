@@ -89,13 +89,17 @@ public class ServiceTwoSQL implements RequestHandler<Request, HashMap<String, Ob
         { 
             logger.log("checkcon: " + url + ", " +username +", " + password  );
             Connection con = DriverManager.getConnection(url,username,password);
+            
             logger.log("checkcon2");
+            
             PreparedStatement ps = con.prepareStatement("DROP TABLE IF EXISTS `" + mytable + "`;");
             ps.execute();
             ps = con.prepareStatement("CREATE TABLE "+ mytable + " (Region VARCHAR(40), Country VARCHAR(40), `Item Type` VARCHAR(40), `Sales Channel` VARCHAR(40),`Order Priority` VARCHAR(40), `Order Date` VARCHAR(40),`Order ID` INT PRIMARY KEY, `Ship Date` VARCHAR(40), `Units Sold` INT,`Unit Price` DOUBLE, `Unit Cost` DOUBLE, `Total Revenue` DOUBLE, `Total Cost` DOUBLE, `Total Profit` DOUBLE, `Order Processing Time` INT, `Gross Margin` FLOAT) ENGINE = MyISAM;");
             ps.execute();
-	    logger.log("before insertion");
-            String mySql = "insert into "+ mytable +" (Region, Country, `Item Type`, `Sales Channel`, `Order Priority`, `Order Date`, `Order ID`, `Ship Date`, `Units Sold`, `Unit Price`, `Unit Cost`, `Total Revenue`, `Total Cost`, `Total Profit`, `Order Processing Time`, `Gross Margin`) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,? ,?)";
+            
+            logger.log("before insertion");
+            
+            String mySql = "insert into " + mytable +" (Region, Country, `Item Type`, `Sales Channel`, `Order Priority`, `Order Date`, `Order ID`, `Ship Date`, `Units Sold`, `Unit Price`, `Unit Cost`, `Total Revenue`, `Total Cost`, `Total Profit`, `Order Processing Time`, `Gross Margin`) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,? ,?)";
             PreparedStatement statement = con.prepareStatement(mySql);
             try {
                 int i = 0;
@@ -145,25 +149,32 @@ public class ServiceTwoSQL implements RequestHandler<Request, HashMap<String, Ob
      */
     public HashMap<String, Object> handleRequest(Request request, Context context) {
         // Create logger
+
         LambdaLogger logger = context.getLogger();
         //Collect inital data.
+
         Inspector inspector = new Inspector();
         inspector.inspectAll();
-        inspector.addTimeStamp("frameworkRuntime");
+
+        //inspector.addTimeStamp("frameworkRuntime");
         //****************START FUNCTION IMPLEMENTATION*************************
         //Create and populate a separate response object for function output. (OPTIONAL)
-        Response r = new Response();
+        // Response r = new Response();
+
         String bucketname = request.getBucketName();
         String key = request.getKey();
-	String mytable=request.getTableName();
-	int batchSize = request.getBatchSize();
-	logger.log(mytable);
+	    String mytable=request.getTableName();
+        int batchSize = request.getBatchSize();
+
+        logger.log(mytable);
         logger.log(bucketname);
         logger.log(key);
+
         AmazonS3Client s3 = new AmazonS3Client();
         s3.setEndpoint("s3.amazonaws.com");
         S3Object obj = s3.getObject(new GetObjectRequest(bucketname, key));
         logger.log(obj.getBucketName());
+        
         InputStream objectData = obj.getObjectContent();
         try 
         {
@@ -184,9 +195,9 @@ public class ServiceTwoSQL implements RequestHandler<Request, HashMap<String, Ob
         }
         //Print log information to the Lambda log as needed
         // Set return result in Response class, class is marshalled into JSON
-        r.setValue("Finished with reading csv into database");
+        //r.setValue("Finished with reading csv into database");
         //****************END FUNCTION IMPLEMENTATION***************************
-        inspector.consumeResponse(r);
+        //inspector.consumeResponse(r);
         //Collect final information such as total runtime and cpu deltas.
         inspector.inspectAllDeltas();
         return inspector.finish();

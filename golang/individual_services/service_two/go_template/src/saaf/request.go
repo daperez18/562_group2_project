@@ -4,4 +4,5 @@ type Request struct {
 	BucketName string `json:"bucketname"`
 	Key        string `json:"key"`
 	TableName  string `json:"tablename"`
+	BatchSize  int    `json:"batch_size"`
 }
